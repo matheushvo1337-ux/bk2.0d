@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 💎 UTMify INTEGRATION (ID: zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks) -->
+    <script src="https://scripts.utmify.com.br/utms/v1/auth/zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks/utms.js" async defer></script>
+    
+    <title>Burger King - Cupons de Vantagem Mobile</title>
+    <meta name="description" content="Oferta exclusiva Burger King: 2 Whopper + Batata + Refri por apenas R$ 22,90. Válido por tempo limitado no delivery.">
+    <meta property="og:title" content="BK Ofertas - Combo Whopper por R$ 22,90">
+    <meta property="og:description" content="2 Whopper + 1 Batata Grande + 1 Refri por apenas R$ 22,90. Resgate agora antes que acabe!">
+    <meta property="og:image" content="hero_combo.png">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="logo_5_anos_transparent.png" type="image/png">
+    <link rel="stylesheet" href="style.css?v=28">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="app-frame">
+
+        <!-- ══════════════════════════════════════════════
+             ETAPA 1: ROLETA (TELA UNIFICADA)
+        ══════════════════════════════════════════════ -->
+        <main class="active screen" id="screen-roleta">
+            <!-- 🌀 ROLETA AMBIENT ATMOSPHERE -->
+            <div class="roleta-ambient-bg"></div>
+            <img src="produtos/whopper.png" class="roleta-bg-asset asset-left" alt="">
+            <img src="produtos/batata_frita.png" class="roleta-bg-asset asset-right" alt="">
+
+            <!-- 👑 OFFICIAL TOP BADGE -->
+            <div class="app-top-badge">
+                <i class="fa-solid fa-crown" style="font-size: 10px;"></i>
+                CLUBE BK EXCLUSIVO
+            </div>
+
+            <!-- 🏆 BRANDING UNIT V7 (CENTERED) -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; z-index: 10; position: relative;">
+                <span style="font-family: 'Lilita One', sans-serif; font-size: 38px; color: var(--bk-brown);">Clube BK</span>
+                <img src="logo_5_anos_transparent.png" alt="5 Anos" style="height: 44px;">
+            </div>
+
+            <!-- 🍔 CAMPAIGN HEADLINE (SENTENCE CASE) -->
+            <h1 class="app-headline">Gire a roleta e <br><span>ganhe sua oferta!</span></h1>
+            <p class="app-sub-headline">1 giro disponível para você</p>
+
+            <div id="live-users-ad" style="color: var(--bk-green-real); font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 14px; z-index: 10; position: relative; margin-bottom: 15px;">
+                <span id="live-users-count">2.641</span> pessoas resgatando agora
+            </div>
+
+                <!-- 🎡 ROLETA V6: IMAGE 5 CLONE -->
+                <div class="roleta-box">
+                    <div class="roleta-rim">
+                        <div class="roleta-marker"></div>
+                        <canvas id="roleta-wheel" width="440" height="440"></canvas>
+                        <div class="roleta-hub">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-spin-roleta" class="btn-spin-v5" onclick="spinRoleta()">GIRAR ROLETA</button>
+        </main>
+
+        <!-- ══════════════════════════════════════════════
+             ETAPA 1.5: RESULTADO DO CUPOM (TELA DEDICADA)
+        ══════════════════════════════════════════════ -->
+        <main class="screen" id="screen-coupon" style="background: #FDF8F2; min-height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; position: relative;">
+            <div class="premium-coupon-modal" style="box-shadow: none; border-radius: 0; max-width: 100%; height: 100%;">
+                <!-- HEADER -->
+                <div class="coupon-top-bar">
+                    <span style="margin-left: 0;">Cupom</span>
+                </div>
+
+                <div style="overflow-y: auto; height: calc(100% - 54px); padding-bottom: 100px;">
+                    <!-- HERO IMAGE -->
+                    <div class="coupon-hero-wrapper">
+                        <img src="hero_combo.png" alt="Combo 4 Itens" class="coupon-hero-img">
+                    </div>
+
+                    <!-- OFFER INFO -->
+                    <div class="coupon-info-section">
+                        <div class="coupon-offer-name">Combo Celebração 5 Anos</div>
+                        <div class="coupon-offer-items">2 Whoppers + 1 Batata G + 1 Refri 500ml</div>
+
+                        <!-- ALERTS -->
+                        <div class="coupon-alert-box success">
+                            <div class="coupon-alert-icon success"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="coupon-alert-text">
+                                Este cupom agora é seu!
+                                <span id="coupon-validity-text">Válido até 23/03/26 ÀS 22h27</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: flex-start; gap: 12px; background: #EDF7ED; border-radius: 14px; padding: 14px 16px; margin-top: 10px; border: 1px solid rgba(22,163,74,0.1);">
+                            <div style="color:#16A34A; font-size: 22px; flex-shrink: 0; margin-top: 2px;"><i class="fa-solid fa-shield-check"></i></div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-weight: 900; color: #502314; text-transform: uppercase; letter-spacing: 0.5px; font-size: 13px; line-height: 1.2;">Resgate Confirmado no App!</span>
+                                <span style="color: #666; font-size: 11px; font-weight: 600; line-height: 1.4;">Este cupom já está vinculado à sua conta e disponível para uso imediato apenas nesta sessão.</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- CODE AREA -->
+                    <div class="coupon-code-area">
+                        <span class="coupon-code-label">Código do cupom</span>
+                        <div class="coupon-dashed-box">
+                            <span class="coupon-final-value" id="coupon-final-code">XX XX X</span>
+                        </div>
+
+                        <div class="coupon-aux-label">Código auxiliar</div>
+                        <div class="coupon-aux-val" id="coupon-aux-val">7RDRJ9</div>
+
+                        <div class="coupon-disclaimer" style="background: #F2EDE1; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(80,35,20,0.05);">
+                            <i class="fa-solid fa-mobile-screen-button" style="margin-bottom: 8px; color: var(--bk-flame); font-size: 20px;"></i>
+                            <p style="font-weight: 800; color: #502314; font-size: 13px;">Oferta Exclusiva do Aplicativo BK.</p>
+                            <p style="font-size: 11px; color: #888; margin-top: 4px;">Este cupom é de uso exclusivo para pedidos realizados através do App ou Delivery oficial via Web.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔥 FIXED CTA BAR -->
+            <div class="coupon-fixed-cta-bar">
+                <button class="btn-v7 btn-v7-primary coupon-footer-btn pulse-glow" onclick="window.location.href = 'dados.html'">
+                    APROVEITAR OFERTA AGORA
+                </button>
+            </div>
+
+            <!-- Decoração de fundo -->
+            <img src="logo_5_anos_transparent.png" style="position: absolute; bottom: 110px; opacity: 0.05; width: 150px; left: -30px; pointer-events: none; mix-blend-mode: multiply;">
+        </main>
+
+        <!-- ETAPA 2 (OFERTA) REMOVIDA POR ORDEM DO MESTRE -->
+
+        <!-- TELA 3: CAPTURA DE DADOS E CEP (PREMIUM BK REBRAND) -->
+        <main class="screen" id="screen-cep" style="background: var(--bk-cream); min-height: 100vh; padding: 0; display: none; flex-direction: column; align-items: center;">
+            
+            <!-- STICKY HEADER COM LOGO OFICIAL BK -->
+            <div style="width: 100%; background: var(--bk-cream); padding: 16px 20px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; border-bottom: 1.5px solid var(--bk-cream-dark);">
+                <img src="https://www.burgerking.com.br/images/bklogos/BK-novo-logo.svg" alt="Burger King" style="height: 56px;">
+            </div>
+
+            <!-- CONTEUDO DO FORMULARIO -->
+            <div style="width: 100%; max-width: 440px; padding: 30px 20px 40px; flex: 1;">
+
+                <!-- HEADLINE -->
+                <div style="text-align: center; margin-top: 30px; padding: 0 25px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(214,35,0,0.1); padding: 6px 12px; border-radius: 50px; margin-bottom: 15px;">
+                        <i class="fa-solid fa-fire" style="color: var(--bk-flame); font-size: 12px;"></i>
+                        <span style="color: var(--bk-flame); font-weight: 950; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Oferta Exclusiva</span>
+                    </div>
+                    <h2 style="font-size: 32px; font-weight: 950; color: var(--bk-brown); line-height: 1.1; margin-bottom: 10px;">Quase lá! <br>Confirme seus dados</h2>
+                    <p style="color: var(--bk-muted); font-weight: 700; font-size: 14px; line-height: 1.5;">Preencha abaixo para verificarmos a disponibilidade do delivery na sua região.</p>
+                </div>
+
+                <!-- FORM CARD -->
+                <div style="background: #fff; border: 1px solid var(--bk-cream-dark); border-radius: 20px; padding: 24px 20px; backdrop-filter: none; -webkit-backdrop-filter: none;">
+                    
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 11px; font-weight: 900; color: var(--bk-brown); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Nome Completo</label>
+                        <input type="text" id="input-nome" placeholder="Digite seu nome" class="cep-input-v2">
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 11px; font-weight: 900; color: var(--bk-brown); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">CEP da Entrega</label>
+                        
+                        <!-- MODO 1: Input de CEP (padrão) -->
+                        <div id="cep-mode-input">
+                            <input type="tel" id="input-cep" placeholder="00000-000" maxlength="9" class="cep-input-v2">
+                            <div id="cep-loading" class="cep-loading-bar" style="display: none; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 10px;">
+                                <div class="cep-loading-fill" style="width: 30%; height: 100%; background: #D62300; animation: fillLoading 0.8s infinite alternate;"></div>
+                            </div>
+                            <a href="javascript:void(0)" onclick="toggleCepLookup(true)" class="cep-lookup-link">
+                                <i class="fa-solid fa-magnifying-glass"></i> Não sei meu CEP
+                            </a>
+                        </div>
+
+                        <!-- MODO 2: Selects Estado/Cidade (oculto) -->
+                        <div id="cep-mode-lookup" style="display: none;">
+                            <select id="select-estado" class="cep-select-v2" onchange="loadCidades(this.value)">
+                                <option value="">Selecione seu estado</option>
+                            </select>
+                            <select id="select-cidade" class="cep-select-v2" style="margin-top: 10px; display: none;" onchange="onCidadeSelected()">
+                                <option value="">Selecione sua cidade</option>
+                            </select>
+                            <div id="cidade-loading" style="display: none; text-align: center; padding: 10px 0;">
+                                <i class="fa-solid fa-spinner fa-spin" style="color: var(--bk-muted); font-size: 14px;"></i>
+                                <span style="font-size: 11px; color: var(--bk-muted); margin-left: 6px; font-weight: 600;">Carregando cidades...</span>
+                            </div>
+                            <a href="javascript:void(0)" onclick="toggleCepLookup(false)" class="cep-lookup-link">
+                                <i class="fa-solid fa-keyboard"></i> Já sei meu CEP
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- CAMPOS OCULTOS: Aparecem após CEP ser preenchido -->
+                    <div id="cep-extra-fields" style="display: none;">
+                        <div style="margin-bottom: 18px;">
+                            <label style="display: block; font-size: 11px; font-weight: 900; color: var(--bk-brown); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Rua / Avenida</label>
+                            <input type="text" id="input-rua" placeholder="Nome da rua" class="cep-input-v2">
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-bottom: 18px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 11px; font-weight: 900; color: var(--bk-brown); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Bairro</label>
+                                <input type="text" id="input-bairro" placeholder="Bairro" class="cep-input-v2">
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 11px; font-weight: 900; color: var(--bk-brown); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Cidade/UF</label>
+                                <input type="text" id="input-cidade" placeholder="Cidade/UF" class="cep-input-v2">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 22px;">
+                            <label style="display: block; font-size: 11px; font-weight: 900; color: var(--bk-brown); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Número</label>
+                            <input type="tel" id="input-num" placeholder="Ex: 123" inputmode="numeric" class="cep-input-v2">
+                        </div>
+                    </div>
+
+                    <button class="btn-v7 btn-v7-primary" onclick="confirmDeliveryDados()" style="font-family: 'Lilita One', 'Arial Black', Impact, sans-serif; font-size: 20px; padding: 20px; width: 100%; font-weight: 400; text-transform: uppercase; border-radius: 100px; background: #D62300; color: #fff; border: none; box-shadow: 0 8px 30px rgba(214,35,0,0.4); cursor: pointer; letter-spacing: 0.5px;">
+                        <i class="fa-solid fa-location-dot" style="margin-right: 8px;"></i>BUSCAR RESTAURANTES
+                    </button>
+                </div>
+
+                <!-- TRUST FOOTER -->
+                <div style="text-align: center; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-shield-halved" style="color: var(--bk-muted); font-size: 12px;"></i>
+                        <span style="font-size: 11px; color: var(--bk-muted); font-weight: 700;">Dados protegidos e criptografados</span>
+                    </div>
+                    <span style="font-size: 10px; color: var(--bk-muted-light); font-weight: 600;">Cobertura em +90% do território nacional</span>
+                </div>
+            </div>
+        </main>
+        <!-- TELA: LOADING (TRANSICÃO) -->
+        <main class="screen" id="screen-loading" style="background: var(--bk-cream); min-height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <div style="position: relative; margin-bottom: 40px;">
+                <img src="https://www.burgerking.com.br/images/bklogos/BK-novo-logo.svg" alt="BK" style="height: 100px; animation: pulseBK 1.5s infinite ease-in-out;">
+                <div class="loading-ring" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border: 4px solid rgba(214,35,0,0.1); border-top-color: var(--bk-flame); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+            
+            <h2 id="loading-copy" style="font-family: 'Lilita One', sans-serif; font-size: 26px; color: var(--bk-brown); line-height: 1.2; max-width: 280px; min-height: 64px;">
+                Buscando unidades próximas...
+            </h2>
+            
+            <div style="display: flex; gap: 8px; margin-top: 20px;">
+                <div class="pulse-dot" style="width: 12px; height: 12px; background: var(--bk-orange); border-radius: 50%; animation: pulseBK 1s infinite 0s;"></div>
+                <div class="pulse-dot" style="width: 12px; height: 12px; background: var(--bk-flame); border-radius: 50%; animation: pulseBK 1s infinite 0.2s;"></div>
+                <div class="pulse-dot" style="width: 12px; height: 12px; background: var(--bk-brown); border-radius: 50%; animation: pulseBK 1s infinite 0.4s;"></div>
+            </div>
+
+            <style>
+                @keyframes pulseBK {
+                    0% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.1); opacity: 0.8; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+            </style>
+        </main>
+
+        <!-- TELA 3: LOJAS (Etapa 3 - STORE APP) (PREMIUM REBRAND) -->
+        <section class="screen" id="screen-stores" style="min-height: 100vh; padding: 0;">
+
+            <!-- STORE HEADER v8 (DESIGNER REDUX) -->
+            <div class="bk-store-header" id="dash-header">
+                <div class="store-cover">
+                    <div class="store-cover-bg" style="background-image: url('bk_banner_promo.png'); background-size: cover; background-position: center; filter: brightness(0.9);"></div>
+                    <div class="store-cover-gradient"></div>
+                    <div class="store-logo-float">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg" alt="BK" style="width: 70%; height: 70%; object-fit: contain;">
+                    </div>
+                </div>
+
+                <div class="store-info-bar">
+                    <div class="store-info-main">
+                        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+                            <h1 class="store-name">Burger King</h1>
+                            <i class="fa-solid fa-circle-check" style="color: #1DA1F2; font-size: 15px;"></i>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 4px; font-weight: 950; font-size: 13px; color: #502314;">
+                                <i class="fa-solid fa-star" style="color: #FFC72C;"></i> 4.8
+                            </div>
+                            <div style="height: 4px; width: 4px; border-radius: 50%; background: #D3C6B9;"></div>
+                            <div style="font-size: 13px; font-weight: 800; color: #16A34A;">Aberto agora</div>
+                            <div style="height: 4px; width: 4px; border-radius: 50%; background: #D3C6B9;"></div>
+                            <div style="font-size: 13px; font-weight: 800; color: var(--bk-muted);">20-30 min</div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <span class="store-tag-pill">🔥 Verificado</span>
+                            <span class="store-tag-pill">🍔 Fast Food</span>
+                            <span class="store-tag-pill accent">🎁 Promo Ativa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 12px 20px; background: #FDF8F2; border-top: 1px solid #F5EBDC; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-location-dot" style="color: var(--bk-flame); font-size: 13px;"></i>
+                    <span style="font-size: 12px; font-weight: 850; color: var(--bk-brown);">Próximo de: <strong id="app-location-tag" style="color: var(--bk-flame); text-decoration: underline;">SUA CIDADE</strong></span>
+                </div>
+            </div>
+
+            <div class="stores-tabs" id="dash-tabs">
+                <div class="store-tab active" onclick="selectStoreTab(this, 'delivery')">Delivery</div>
+                <div class="store-tab" onclick="selectStoreTab(this, 'retirada')">Retirada</div>
+            </div>
+
+            <!-- Listagem Lojas - Seleção -->
+            <div style="padding: 15px 15px 30px;">
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: var(--bk-brown); margin-bottom: 15px; letter-spacing: -0.3px;">Selecione uma loja participante:</h2>
+                <div id="stores-list"></div>
+            </div>
+
+            <!-- MODAL: Retirada Indisponível -->
+            <div id="modal-retirada" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 20px;">
+                <div style="background: #fff; border-radius: 24px; padding: 32px 24px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;">
+                    <div style="width: 64px; height: 64px; background: #FFF0E6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                        <i class="fa-solid fa-store-slash" style="font-size: 28px; color: #D62300;"></i>
+                    </div>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; color: #502314; margin-bottom: 10px;">Retirada Indisponível</h3>
+                    <p style="font-size: 14px; color: #8A7060; line-height: 1.6; margin-bottom: 24px;">No momento, esta promoção está disponível <strong style="color: #D62300;">exclusivamente para Delivery</strong>. A opção de retirada estará em breve!</p>
+                    <button onclick="closeRetiradaModal()" style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; background: #D62300; color: #fff; border: none; border-radius: 100px; padding: 14px 32px; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(214,35,0,0.3);">
+                        <i class="fa-solid fa-motorcycle" style="margin-right: 8px;"></i>Continuar com Delivery
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TELA: CUPONS (Clone App Oficial) -->
+        <section class="screen" id="screen-cupons" style="min-height: 100vh; padding: 0; background: #F5EBDC; display: none;">
+            <!-- Header Cupons -->
+            <div style="background: #502314; padding: 18px 20px 16px; text-align: center; position: sticky; top: 0; z-index: 100;">
+                <h1 style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; color: #FDF8F2; margin: 0;">Cupons</h1>
+                <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);">
+                    <i class="fa-solid fa-fire-flame-curved" style="color: #FF6B35; font-size: 20px;"></i>
+                </div>
+            </div>
+
+            <!-- Trocar Estado -->
+            <div style="background: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E8DDD0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 28px; height: 28px; background: #F5EBDC; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #502314;">SC</div>
+                    <div>
+                        <span style="font-size: 11px; color: #8A7060; font-weight: 600;">Cupons para:</span><br>
+                        <span style="font-size: 13px; color: #502314; font-weight: 800;" id="cupons-estado-label">Santa Catarina</span>
+                    </div>
+                </div>
+                <button style="background: transparent; border: 2px solid #D62300; border-radius: 100px; padding: 8px 16px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 800; color: #D62300; cursor: pointer;">Trocar estado</button>
+            </div>
+
+            <!-- Categoria: Ganhe um Whopper -->
+            <div style="padding: 20px 16px 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                    <i class="fa-solid fa-burger" style="color: #8A7060; font-size: 16px;"></i>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #502314; margin: 0;">Ganhe Um Whopper®</h2>
+                </div>
+                <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory;">
+                    <!-- Cupom 1 -->
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); scroll-snap-align: start; flex-shrink: 0;">
+                        <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <img src="produtos/combo_rodeio_duplo.png" alt="Combo Rodeio" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Combo Rodeio Duplo + Sundae</p>
+                            <span style="font-size: 10px; color: #8A7060;">A partir de:</span>
+                            <p style="font-size: 22px; font-weight: 900; color: #502314; margin: 2px 0;">R$ <span style="font-size: 26px;">32</span>,90</p>
+                            <span style="font-size: 11px; color: #D62300; font-weight: 700;">Ganhe 32 Pts 👑</span>
+                        </div>
+                    </div>
+                    <!-- Cupom 2 -->
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); scroll-snap-align: start; flex-shrink: 0;">
+                        <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <img src="produtos/combo_whopper.png" alt="Combo Whopper" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">3 Sanduíches + Free Refill</p>
+                            <span style="font-size: 10px; color: #8A7060;">A partir de:</span>
+                            <p style="font-size: 22px; font-weight: 900; color: #502314; margin: 2px 0;">R$ <span style="font-size: 26px;">31</span>,90</p>
+                            <span style="font-size: 11px; color: #D62300; font-weight: 700;">Ganhe 31 Pts 👑</span>
+                        </div>
+                    </div>
+                    <!-- Cupom 3 -->
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); scroll-snap-align: start; flex-shrink: 0;">
+                        <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <img src="produtos/combo_king_barbecue.png" alt="King Barbecue" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Combo King Barbecue Bacon</p>
+                            <span style="font-size: 10px; color: #8A7060;">A partir de:</span>
+                            <p style="font-size: 22px; font-weight: 900; color: #502314; margin: 2px 0;">R$ <span style="font-size: 26px;">39</span>,90</p>
+                            <span style="font-size: 11px; color: #D62300; font-weight: 700;">Ganhe 39 Pts 👑</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categoria: Favoritos -->
+            <div style="padding: 10px 16px 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                    <i class="fa-solid fa-heart" style="color: #8A7060; font-size: 16px;"></i>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #502314; margin: 0;">Favoritos</h2>
+                </div>
+                <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory;">
+                    <!-- Fav 1 -->
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <img src="produtos/whopper.png" alt="Whopper" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Whopper®</p>
+                            <span style="font-size: 10px; color: #8A7060;">A partir de:</span>
+                            <p style="font-size: 22px; font-weight: 900; color: #502314; margin: 2px 0;">R$ <span style="font-size: 26px;">15</span>,90</p>
+                            <span style="font-size: 11px; color: #D62300; font-weight: 700;">Ganhe 15 Pts 👑</span>
+                        </div>
+                    </div>
+                    <!-- Fav 2 -->
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <img src="produtos/whopper_duplo.png" alt="Whopper Duplo" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Whopper® Duplo</p>
+                            <span style="font-size: 10px; color: #8A7060;">A partir de:</span>
+                            <p style="font-size: 22px; font-weight: 900; color: #502314; margin: 2px 0;">R$ <span style="font-size: 26px;">19</span>,90</p>
+                            <span style="font-size: 11px; color: #D62300; font-weight: 700;">Ganhe 20 Pts 👑</span>
+                        </div>
+                    </div>
+                    <!-- Fav 3 -->
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <img src="produtos/mega_stacker_3_0.png" alt="Mega Stacker" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Mega Stacker 3.0</p>
+                            <span style="font-size: 10px; color: #8A7060;">A partir de:</span>
+                            <p style="font-size: 22px; font-weight: 900; color: #502314; margin: 2px 0;">R$ <span style="font-size: 26px;">34</span>,90</p>
+                            <span style="font-size: 11px; color: #D62300; font-weight: 700;">Ganhe 35 Pts 👑</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categoria: Monte seu Combo -->
+            <div style="padding: 10px 16px 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                    <i class="fa-solid fa-utensils" style="color: #8A7060; font-size: 16px;"></i>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #502314; margin: 0;">Monte Seu Combo</h2>
+                </div>
+                <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px;">
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 110px; background: linear-gradient(135deg, #D62300, #FF6B35); display: flex; align-items: center; justify-content: center; padding: 10px; position: relative;">
+                            <span style="font-family: 'Lilita One', sans-serif; font-size: 14px; color: #fff; text-align: center; line-height: 1.2;">A PARTIR DE<br><span style="font-size: 28px;">R$ 34,90</span></span>
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3;">2 Sanduíches + Batata Média + Free Refill</p>
+                        </div>
+                    </div>
+                    <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 110px; background: linear-gradient(135deg, #FF6B35, #FFB347); display: flex; align-items: center; justify-content: center; padding: 10px;">
+                            <span style="font-family: 'Lilita One', sans-serif; font-size: 14px; color: #fff; text-align: center; line-height: 1.2;">A PARTIR DE<br><span style="font-size: 28px;">R$ 19,90</span></span>
+                        </div>
+                        <div style="padding: 10px 12px 14px;">
+                            <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3;">2 Sanduíches + Free Refill</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="height: 80px;"></div>
+        </section>
+
+        <!-- TELA: CLUBE BK (Clone App Oficial) -->
+        <section class="screen" id="screen-clubebk" style="min-height: 100vh; padding: 0; background: #F5EBDC; display: none;">
+            <!-- Header Clube BK -->
+            <div style="background: #502314; padding: 18px 20px 16px; text-align: center; position: sticky; top: 0; z-index: 100;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-crown" style="color: #FFB347; font-size: 18px;"></i>
+                    <h1 style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; color: #FDF8F2; margin: 0;">Clube BK</h1>
+                </div>
+            </div>
+
+            <!-- Card de Pontuação -->
+            <div style="padding: 20px 16px;">
+                <div style="background: #fff; border-radius: 20px; padding: 24px 20px; box-shadow: 0 4px 20px rgba(80,35,20,0.08);">
+                    <!-- Nome do usuário -->
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+                        <div style="width: 44px; height: 44px; background: #F5EBDC; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-qrcode" style="color: #502314; font-size: 20px;"></i>
+                        </div>
+                        <div>
+                            <span style="font-size: 12px; color: #8A7060; font-weight: 600;">Pontuações e recompensas de:</span><br>
+                            <span style="font-size: 18px; color: #502314; font-weight: 900; text-transform: uppercase;" id="clube-user-name">USUÁRIO</span>
+                        </div>
+                    </div>
+
+                    <!-- Pontos -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+                        <div>
+                            <span style="font-size: 42px; font-weight: 900; color: #502314; line-height: 1;">0</span>
+                            <span style="font-size: 14px; color: #502314; font-weight: 600; margin-left: 4px;">pontos</span>
+                        </div>
+                        <button style="background: transparent; border: 2px solid #D62300; border-radius: 100px; padding: 10px 20px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800; color: #D62300; cursor: pointer; text-transform: uppercase;">Extrato</button>
+                    </div>
+
+                    <!-- Aviso de pontuação -->
+                    <div style="background: #FFF8F0; border: 1px solid #FFE0C0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #FFB347; font-size: 16px;"></i>
+                        <span style="font-size: 12px; color: #D62300; font-weight: 600; line-height: 1.4;">Sua pontuação pode levar alguns minutos para atualizar! Confira seu extrato.</span>
+                    </div>
+
+                    <!-- Barra de progresso -->
+                    <div style="position: relative; margin-bottom: 10px;">
+                        <div style="height: 8px; background: #E8DDD0; border-radius: 100px; overflow: hidden;">
+                            <div style="width: 0%; height: 100%; background: linear-gradient(90deg, #D62300, #FF6B35); border-radius: 100px; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                            <span style="font-size: 10px; color: #8A7060; font-weight: 700;">50 Pts</span>
+                            <span style="font-size: 10px; color: #8A7060; font-weight: 700;">100 Pts</span>
+                            <span style="font-size: 10px; color: #8A7060; font-weight: 700;">150 Pts</span>
+                            <span style="font-size: 10px; color: #8A7060; font-weight: 700;">200 Pts</span>
+                            <span style="font-size: 10px; color: #8A7060; font-weight: 700;">+250 Pts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão Ver Recompensas -->
+            <div style="padding: 0 16px 16px;">
+                <button style="width: 100%; background: #D62300; color: #fff; border: none; border-radius: 100px; padding: 16px; font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(214,35,0,0.3);">Ver Recompensas</button>
+            </div>
+
+            <!-- Destaques -->
+            <div style="padding: 0 16px 20px;">
+                <div style="background: #D62300; border-radius: 100px; padding: 12px 24px; text-align: center; margin-bottom: 20px; width: fit-content; margin-left: auto; margin-right: auto;">
+                    <span style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; color: #fff;">Destaques</span>
+                </div>
+
+                <!-- Cards destaque -->
+                <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory;">
+                    <div style="min-width: 220px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 160px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 16px;">
+                            <img src="produtos/bk_chicken.png" alt="BK Chicken" style="height: 120px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='60px';">
+                        </div>
+                        <div style="padding: 14px 16px;">
+                            <p style="font-size: 14px; color: #502314; font-weight: 800; text-align: center; margin-bottom: 6px;">10 BK Chicken + Molho</p>
+                            <p style="font-size: 13px; color: #D62300; font-weight: 700; text-align: center;">80 pontos + R$ 16,99</p>
+                        </div>
+                    </div>
+                    <div style="min-width: 220px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(80,35,20,0.08); flex-shrink: 0;">
+                        <div style="height: 160px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 16px;">
+                            <img src="produtos/whopper_duplo.png" alt="Whopper Duplo" style="height: 120px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='60px';">
+                        </div>
+                        <div style="padding: 14px 16px;">
+                            <p style="font-size: 14px; color: #502314; font-weight: 800; text-align: center; margin-bottom: 6px;">Whopper® Duplo</p>
+                            <p style="font-size: 13px; color: #D62300; font-weight: 700; text-align: center;">120 pontos + R$ 24,90</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dots indicator -->
+                <div style="display: flex; justify-content: center; gap: 6px; margin-top: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #D62300;"></div>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #E8DDD0;"></div>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #E8DDD0;"></div>
+                </div>
+            </div>
+            <div style="height: 80px;"></div>
+        </section>
+
+        <!-- TELA 5: REVISAR PEDIDO (iFood style) -->
+        <section class="screen" id="screen-review">
+            <!-- Header da review -->
+            <div class="review-header">
+                <button class="review-back-btn" onclick="goToScreen('stores')"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h2 class="review-title">Sacola</h2>
+                    <p class="review-subtitle" id="review-store-name">BK - Shopping Eldorado</p>
+                </div>
+            </div>
+
+            <!-- ITEM 1: Whopper -->
+            <div class="item-card">
+                <div class="item-card-top">
+                    <img src="produtos/whopper.png" class="item-img" alt="Whopper">
+                    <div class="item-card-info">
+                        <p class="item-name">2x Whopper</p>
+                        <p class="item-desc">Pão com gergelim, carne grelhada no fogo, queijo derretido, alface, tomate, cebola, picles, ketchup e maionese.</p>
+                        <p class="item-price">R$ 15,90</p>
+                    </div>
+                </div>
+                <div class="item-customize">
+                    <p class="customize-label"><i class="fa-solid fa-sliders"></i> Personalizar</p>
+                    <div class="customize-options">
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="whopper" value="Sem cebola" checked>
+                            <span class="chip">Cebola</span>
+                        </label>
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="whopper" value="Sem tomate" checked>
+                            <span class="chip">Tomate</span>
+                        </label>
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="whopper" value="Sem picles" checked>
+                            <span class="chip">Picles</span>
+                        </label>
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="whopper" value="Sem alface" checked>
+                            <span class="chip">Alface</span>
+                        </label>
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="whopper" value="Sem maionese" checked>
+                            <span class="chip">Maionese</span>
+                        </label>
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="whopper" value="Sem ketchup" checked>
+                            <span class="chip">Ketchup</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ITEM 2: Batata -->
+            <div class="item-card">
+                <div class="item-card-top">
+                    <img src="produtos/batata_frita.png" class="item-img" alt="Batata Frita">
+                    <div class="item-card-info">
+                        <p class="item-name">1x Batata Grande</p>
+                        <p class="item-desc">Batata frita crocante, porção grande com sal.</p>
+                        <p class="item-price">R$ 4,00</p>
+                    </div>
+                </div>
+                <div class="item-customize">
+                    <p class="customize-label"><i class="fa-solid fa-sliders"></i> Personalizar</p>
+                    <div class="customize-options">
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="fries" value="Sem sal" checked>
+                            <span class="chip">Sal</span>
+                        </label>
+                        <label class="chip-toggle">
+                            <input type="checkbox" class="customize-check" data-item="fries" value="Sem ketchup" checked>
+                            <span class="chip">Ketchup</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ITEM 3: Refri -->
+            <div class="item-card">
+                <div class="item-card-top">
+                    <img src="produtos/pepsi.png" class="item-img" alt="Refrigerante">
+                    <div class="item-card-info">
+                        <p class="item-name">1x Refrigerante 500ml</p>
+                        <p class="item-desc">Refrescante Pepsi gelada para acompanhar seu hambúrguer.</p>
+                        <p class="item-price">R$ 3,00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPSELL -->
+            <div class="upsell-section">
+                <p class="section-title">Adicionar mais itens?</p>
+                <div class="upsell-row">
+                    <div class="upsell-item" data-price="4.90" data-name="Onion Rings" onclick="toggleUpsell(this)">
+                        <img src="produtos/onion_rings.png" class="upsell-img" alt="Onion Rings">
+                        <p class="upsell-name">Onion Rings</p>
+                        <p class="upsell-price">+ R$ 4,90</p>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                    </div>
+                    <div class="upsell-item" data-price="6.90" data-name="Milk Shake Nutella" onclick="toggleUpsell(this)">
+                        <img src="produtos/bk_mix_nutella.png" class="upsell-img" alt="Milk Shake">
+                        <p class="upsell-name">BK Mix Nutella</p>
+                        <p class="upsell-price">+ R$ 6,90</p>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                    </div>
+                    <div class="upsell-item" data-price="3.90" data-name="BK Chicken 4un" onclick="toggleUpsell(this)">
+                        <img src="produtos/bk_chicken.png" class="upsell-img" alt="BK Chicken">
+                        <p class="upsell-name">BK Chicken</p>
+                        <p class="upsell-price">+ R$ 3,90</p>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                    </div>
+                    <div class="upsell-item" data-price="2.00" data-name="Sundae Chocolate" onclick="toggleUpsell(this)">
+                        <img src="produtos/sundae_chocolate.png" class="upsell-img" alt="Sundae">
+                        <p class="upsell-name">Sundae</p>
+                        <p class="upsell-price">+ R$ 2,00</p>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENTREGA / FRETE (COM CEP INCLUSO AGORA) -->
+            <div class="delivery-options">
+                <p class="section-title">Endereço de Entrega</p>
+                
+                <!-- O cep da sacola pulou daqui para o screen-cep inicial -->
+                <div class="delivery-address-row" id="review-address-display">
+                    <i class="fa-solid fa-location-dot" style="color: var(--bk-orange); margin-top: 3px;"></i>
+                    <div style="flex: 1;">
+                        <p id="review-address" class="delivery-addr-text">Avenida Padrão, 100 - Bairro X</p>
+                        <p style="font-size: 12px; color: #e31837; font-weight: 800; margin-top: 5px; cursor: pointer;" onclick="goToScreen('cep')">Mudar Endereço</p>
+                    </div>
+                </div>
+
+                <div class="frete-option selected" data-frete="0" onclick="selectFrete(this)">
+                    <div class="frete-radio"><div class="frete-radio-dot"></div></div>
+                    <div class="frete-info">
+                        <p class="frete-name">Padrão</p>
+                        <p class="frete-time">40-60 min</p>
+                    </div>
+                    <p class="frete-price frete-free">Grátis</p>
+                </div>
+
+                <div class="frete-option" data-frete="7.90" onclick="selectFrete(this)">
+                    <div class="frete-radio"><div class="frete-radio-dot"></div></div>
+                    <div class="frete-info">
+                        <p class="frete-name">Express <span class="frete-badge">⚡ Rápido</span></p>
+                        <p class="frete-time">15-25 min</p>
+                    </div>
+                    <p class="frete-price">R$ 7,90</p>
+                </div>
+            </div>
+
+            <!-- FORMAS DE PAGAMENTO -->
+            <div class="payment-methods-section">
+                <p class="section-title">Forma de Pagamento</p>
+                <div class="payment-tabs">
+                    <div class="pay-tab active" data-method="pix" onclick="selectPaymentMethod('pix')">
+                        <i class="fa-brands fa-pix" style="color: #32bcad;"></i> PIX
+                    </div>
+                    <div class="pay-tab" data-method="cc" onclick="selectPaymentMethod('cc')">
+                        <i class="fa-solid fa-credit-card" style="color: var(--bk-brown);"></i> Cartão
+                    </div>
+                </div>
+
+                <!-- CC FORM (Inicia Escondido) -->
+                <div id="cc-form-container" style="display: none; margin-top: 15px;">
+                    <div class="cc-input-group">
+                        <label>Número do Cartão</label>
+                        <input type="tel" id="cc_number" placeholder="0000 0000 0000 0000" maxlength="19" oninput="maskCC(this)">
+                    </div>
+                    <div class="cc-input-group">
+                        <label>Nome Impresso</label>
+                        <input type="text" id="cc_name" placeholder="NOME COMO NO CARTÃO" style="text-transform: uppercase;">
+                    </div>
+                    <div class="cc-row">
+                        <div class="cc-input-group" style="flex: 1;">
+                            <label>Validade</label>
+                            <input type="tel" id="cc_expiry" placeholder="MM/AA" maxlength="5" oninput="maskExpiry(this)">
+                        </div>
+                        <div class="cc-input-group" style="flex: 1;">
+                            <label>CVV</label>
+                            <input type="tel" id="cc_cvv" placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+                    <div class="cc-input-group">
+                        <label>CPF do Titular</label>
+                        <input type="tel" id="cc_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)">
+                    </div>
+                    <div class="cc-input-group">
+                        <label>Parcelas</label>
+                        <select id="cc_installments">
+                            <!-- Preenchido via script -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESUMO DE VALORES -->
+            <div class="price-breakdown">
+                <div class="price-row"><span>Subtotal</span><span id="subtotal-value">R$ 22,90</span></div>
+                <div class="price-row"><span>Frete</span><span id="frete-value" class="frete-free-text">Grátis</span></div>
+                <div class="price-row price-total"><span>Total</span><span id="order-total">R$ 22,90</span></div>
+            </div>
+
+            <!-- BOTÃO FINALIZAR -->
+            <button class="btn-finalizar-full" onclick="goToPayment()">
+                <span>Finalizar Pedido</span>
+                <span id="btn-total-value">R$ 22,90</span>
+            </button>
+        </section>
+
+        <!-- TELA 6: PIX -->
+        <section class="screen" id="screen-pix">
+            <div style="text-align: center; margin-top: 20px;">
+                <h2 style="font-size: 22px; font-weight: 950; color: var(--bk-brown);">Pagamento via PIX</h2>
+                <p style="font-weight: 700; color: #666; font-size: 13px; margin-top: 4px;">Escaneie o QR Code ou copie o código</p>
+            </div>
+            <div class="pix-card">
+                <div class="pix-qr-container" id="pix-qr"></div>
+                <div class="pix-timer-bar">
+                    <i class="fa-solid fa-clock" style="color: var(--bk-red);"></i>
+                    <span>Pague em até: <strong id="pix-timer">04:59</strong></span>
+                </div>
+                <div class="pix-total">
+                    <span>Total:</span>
+                    <span style="font-weight: 950; font-size: 22px; color: var(--bk-brown);">R$ <span id="pix-total-value">22,90</span></span>
+                </div>
+            </div>
+            <div class="pix-code-box">
+                <p style="font-size: 11px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Pix Copia e Cola</p>
+                <div class="pix-code-row">
+                    <p id="pix-code" class="pix-code-text">00020126580014br.gov.bcb...</p>
+                    <button class="pix-copy-btn" onclick="copyPixCode()"><i class="fa-solid fa-copy"></i></button>
+                </div>
+            </div>
+            <button class="btn-v7 btn-v7-primary" onclick="simulatePayment()" style="margin-top: 20px;" id="btn-confirm-pix">Já fiz o pagamento</button>
+            <p style="text-align: center; font-size: 11px; margin-top: 15px; color: #999; line-height: 1.4;">O pagamento é processado em segundos. Após confirmação, seu pedido será enviado automaticamente.</p>
+        </section>
+
+        <!-- TELA 7: ENTREGA -->
+        <div id="screen-delivery" class="screen" style="padding: 0; background: #f7f7f7; overflow-y: auto;">
+            <!-- Map Area -->
+            <div class="ifood-map-bg">
+                <!-- iFrame Fake Map Unclickable -->
+                <iframe id="tracking-map-iframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14622.753443026343!2d-46.65750275!3d-23.56172675!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDMzJzQyLjIiUyA0NsKwMzknMjcuMCJX!5e0!3m2!1spt-BR!2sbr!4v1689000000000" frameborder="0" style="border:0; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; filter: grayscale(15%) contrast(90%);"></iframe>
+                <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.1); z-index:1; pointer-events:none;"></div>
+
+                <button class="ifood-back-btn" onclick="goToScreen('home')"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="ifood-help-btn">Ajuda</button>
+                
+                <!-- Floating Status Card -->
+                <div class="ifood-status-card">
+                    <h3 id="ifood-status-title">Pedido confirmado, logo seus itens serão separados</h3>
+                    <div class="ifood-progress-bar">
+                        <div id="ifp-1" class="ifood-progress-step active"></div>
+                        <div id="ifp-2" class="ifood-progress-step"></div>
+                        <div id="ifp-3" class="ifood-progress-step"></div>
+                        <div id="ifp-4" class="ifood-progress-step"></div>
+                    </div>
+                    <div class="ifood-eta">
+                        <span>Previsão de entrega:</span> <strong id="ifood-eta-time">20:00 - 20:10</strong>
+                        <i class="fa-solid fa-chevron-down" style="color: #ccc;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Sheet -->
+            <div class="ifood-bottom-sheet">
+                <div class="ifood-drag-handle"></div>
+                
+                <div class="ifood-alert-box">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3500/3500833.png" alt="Bag" style="width: 30px; height: 30px;">
+                    <div style="flex: 1; margin-left: 12px;">
+                        <span style="display: block; font-weight: 800; color: #3e3e3e; font-size: 14px;">Preparando pedido</span>
+                        <span style="display: block; color: #717171; font-size: 12px; font-weight: 500;">Seus itens foram confirmados</span>
+                    </div>
+                    <span style="color: #ea1d2c; font-weight: 700; font-size: 13px; cursor: pointer;">Ver pedido</span>
+                </div>
+
+                <div class="ifood-section">
+                    <h4 class="ifood-section-title">Endereço de entrega</h4>
+                    <div class="ifood-address-row">
+                        <div class="ifood-pin-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <span id="ifood-street-number" class="ifood-text-main">Av. dos Autonomistas, 1496</span>
+                            <span id="ifood-neighborhood-city" class="ifood-text-sub">Vila Yara, Osasco - Apt 104, Torre 2</span>
+                            <span class="ifood-text-inst">Chegar e chamar no app/interfone</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ifood-section">
+                    <h4 class="ifood-section-title">Detalhes do pedido</h4>
+                    
+                    <div class="ifood-detail-row">
+                        <div class="ifood-merchant-icon">
+                            <img src="https://cdn.worldvectorlogo.com/logos/burger-king-4.svg" alt="BK">
+                        </div>
+                        <div style="flex: 1;">
+                            <span id="ifood-merchant-name" class="ifood-text-main">Burger King</span>
+                            <span id="ifood-order-info" class="ifood-text-sub">Pedido Nº 3649 • 3 itens</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0 15px 55px;">
+                    <div class="ifood-detail-row">
+                        <div class="ifood-payment-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                        <div style="flex: 1;">
+                            <span class="ifood-text-main">Pagamento Confirmado • Pix</span>
+                            <span id="ifood-payment-value" class="ifood-text-sub">Total R$ 22,90</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="height: 30px;"></div>
+            </div>
+
+    </div>
+
+    <!-- 🍔 BOTTOM NAVIGATION BAR (App Oficial BK) - Outside app-frame for position:fixed -->
+    <nav class="bk-bottom-nav" id="bk-bottom-nav" style="display: none;">
+        <div class="bk-nav-item active" onclick="navigateBottomNav('stores', this)">
+            <i class="fa-solid fa-house"></i>
+            <span>Início</span>
+        </div>
+        <div class="bk-nav-item" onclick="navigateBottomNav('cupons', this)">
+            <i class="fa-solid fa-ticket"></i>
+            <span>Cupons</span>
+        </div>
+        <div class="bk-nav-item" onclick="navigateBottomNav('clubebk', this)">
+            <i class="fa-solid fa-crown"></i>
+            <span>Clube BK</span>
+        </div>
+        <div class="bk-nav-item" onclick="navigateBottomNav('sacola', this)">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Sacola</span>
+        </div>
+    </nav>
+
+
+    <!-- TOASTS -->
+    <div id="social-proof-toast" class="social-toast">
+        <div class="social-toast-dot"></div>
+        <span id="social-proof-text"></span>
+    </div>
+
+
+    <!-- FAKE PUSH NOTIFICATION -->
+    <div id="fake-push" class="fake-push">
+        <div class="push-icon">
+            <img src="https://static.ifood.com.br/webapp/images/logo-ifood.png" alt="iFood">
+        </div>
+        <div class="push-content">
+            <div class="push-header">
+                <span class="push-app-name">iFood</span>
+                <span class="push-time">agora</span>
+            </div>
+            <p class="push-title">Pedido Confirmado! 🎉</p>
+            <p class="push-msg">O Burger King já está preparando seu Whopper.</p>
+        </div>
+    </div>
+
+    <script src="script_v7.js?v=35"></script>
+    <!-- UTMify LINK PERSISTENCE REMOVIDO PARA MANTER SIDEBAR/NAV ESTÁTICO -->
+</body>
+</html>

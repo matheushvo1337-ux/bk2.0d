@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://scripts.utmify.com.br/utms/v1/auth/zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks/utms.js" async defer></script>
+    <title>Burger King - Seu Cupom!</title>
+    <link rel="icon" href="logo_5_anos_transparent.png" type="image/png">
+    <link rel="stylesheet" href="style.css?v=29">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-frame">
+        <main class="active screen" id="screen-coupon" style="background: #FDF8F2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0;">
+            <div class="premium-coupon-modal" style="box-shadow: none; border-radius: 0; max-width: 100%; height: 100%;">
+                <div class="coupon-top-bar"><span>Cupom</span></div>
+                <div style="overflow-y: auto; height: calc(100% - 54px); padding-bottom: 100px;">
+                    <div class="coupon-hero-wrapper"><img src="hero_combo.png" alt="Combo" class="coupon-hero-img"></div>
+                    <div class="coupon-info-section">
+                        <div class="coupon-offer-name">Combo Celebração 5 Anos</div>
+                        <div class="coupon-offer-items">2 Whoppers + 1 Batata G + 1 Refri 500ml</div>
+                        <div class="coupon-alert-box success">
+                            <div class="coupon-alert-icon success"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="coupon-alert-text">Este cupom agora é seu!<br><span id="coupon-validity-text">Válido até hoje</span></div>
+                        </div>
+                    </div>
+                    <div class="coupon-code-area">
+                        <span class="coupon-code-label">Código do cupom</span>
+                        <div class="coupon-dashed-box"><span class="coupon-final-value" id="coupon-final-code">XX XX X</span></div>
+                        <div class="coupon-aux-label">Código auxiliar</div>
+                        <div class="coupon-aux-val" id="coupon-aux-val">7RDRJ9</div>
+                    </div>
+                </div>
+            </div>
+            <div class="coupon-fixed-cta-bar">
+                <button class="btn-v7 btn-v7-primary coupon-footer-btn pulse-glow" onclick="goToScreen('cep')">APROVEITAR OFERTA AGORA</button>
+            </div>
+        </main>
+    </div>
+    <script src="script_v7.js?v=35"></script>
+</body>
+</html>

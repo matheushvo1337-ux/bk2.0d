@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burger King - Acompanhe seu Pedido</title>
+    <link rel="stylesheet" href="style.css?v=29">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f7f7f7 !important; }
+    </style>
+</head>
+<body>
+    <div class="app-frame" style="background: #f7f7f7;">
+        <section class="active screen" id="screen-delivery" style="padding: 0;">
+            <div class="ifood-map-bg">
+                <div id="ifood-map" style="width: 100%; height: 100%;"></div>
+                <button class="ifood-back-btn" onclick="goToScreen('stores')"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="ifood-status-card">
+                    <h3 id="ifood-status-text">Confirmando seu pedido...</h3>
+                    <div class="ifood-progress-bar">
+                        <div class="ifood-progress-step active"></div>
+                        <div class="ifood-progress-step"></div>
+                        <div class="ifood-progress-step"></div>
+                        <div class="ifood-progress-step"></div>
+                    </div>
+                    <div class="ifood-eta"><span>Chega em</span><strong id="ifood-eta-time">45-55 min</strong></div>
+                </div>
+            </div>
+            <div class="ifood-bottom-sheet">
+                <div class="ifood-drag-handle"></div>
+                <div class="ifood-section">
+                    <h4 class="ifood-section-title">Endereço de entrega</h4>
+                    <div class="ifood-address-row">
+                        <div class="ifood-pin-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <span id="ifood-street-number" class="ifood-text-main">...</span>
+                            <span id="ifood-neighborhood-city" class="ifood-text-sub">...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ifood-section">
+                    <h4 class="ifood-section-title">Detalhes do pedido</h4>
+                    <div class="ifood-detail-row">
+                        <div class="ifood-merchant-icon"><img src="https://www.burgerking.com.br/images/bklogos/BK-novo-logo.svg" alt="BK"></div>
+                        <div style="flex: 1;"><span class="ifood-text-main">Burger King</span><span class="ifood-text-sub">Combo Celebração 5 Anos</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="script_v7.js?v=35"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // Mock do Endereço
+             if(state.street) {
+                 document.getElementById('ifood-street-number').textContent = `${state.street}, ${state.number}`;
+                 document.getElementById('ifood-neighborhood-city').textContent = `${state.neighborhood}, ${state.city}`;
+             }
+             // Inicia animação de tracking (ifood style)
+             const steps = document.querySelectorAll('.ifood-progress-step');
+             const statusTxt = document.getElementById('ifood-status-text');
+             let step = 0;
+             const messages = [
+                 'Confirmando pedido...',
+                 'O BK está preparando seu Whopper!',
+                 'Pedido saindo para entrega...',
+                 'O entregador está a caminho!'
+             ];
+             setInterval(() => {
+                 if(step < 3) {
+                     step++;
+                     steps[step].classList.add('active');
+                     statusTxt.textContent = messages[step];
+                 }
+             }, 8000);
+        });
+    </script>
+</body>
+</html>

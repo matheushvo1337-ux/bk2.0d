@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processando...</title>
+    <link rel="stylesheet" href="style.css?v=36">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-frame">
+        <main class="active screen" id="screen-loading" style="background: #ffffff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <div style="position: relative; margin-bottom: 30px;">
+                <div class="ifood-spinner"></div>
+            </div>
+            <img src="https://www.burgerking.com.br/images/bklogos/BK-novo-logo.svg" alt="BK" style="height: 60px; margin-bottom: 20px; opacity: 0.8;">
+            <h2 id="loading-copy" class="loading-text-ifood">Buscando as melhores ofertas...</h2>
+        </main>
+    </div>
+    <script src="script_v7.js?v=35"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const copies = ['Calculando restaurante mais próximo pela sua localização...','Verificando disponibilidade de motos...','Aplicando desconto na Sacola...','Tudo pronto! Seu combo foi separado.'];
+            const el = document.getElementById('loading-copy');
+            if (el) el.textContent = copies[Math.floor(Math.random() * copies.length)];
+            
+            // Redirecionamento automático simulado se for a página standalone
+            setTimeout(() => {
+                if (window.location.pathname.includes('loading.html')) {
+                    window.location.href = 'sacola.html';
+                }
+            }, 1800);
+        });
+    </script>
+</body>
+</html>

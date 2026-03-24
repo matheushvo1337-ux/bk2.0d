@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burger King - Sacola</title>
+    <link rel="stylesheet" href="style.css?v=31">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="app-frame">
+        <section class="active screen" id="screen-review">
+            <header class="review-header">
+                <button class="review-back-btn" onclick="window.location.href='lista-cupons.html'"><i class="fa-solid fa-chevron-left"></i></button>
+                <h2 class="review-title">Sacola</h2>
+            </header>
+
+            <div id="cart-items-container">
+                <!-- Itens injetados via JS (iFood Style) -->
+            </div>
+
+            <div class="upsell-section" style="margin-bottom: 24px;">
+                <p class="section-title">Incremente seu pedido</p>
+                <div class="upsell-carousel">
+                    <!-- Produto 1 -->
+                    <div class="upsell-item" data-price="14.90" data-name="Onion Rings" onclick="toggleUpsell(this)">
+                        <img src="produtos/onion_rings.png" class="upsell-img" alt="Onion Rings">
+                        <p class="upsell-name">Onion Rings (G)</p>
+                        <p class="upsell-price">+ R$ 14,90</p>
+                    </div>
+                    <!-- Produto 2 -->
+                    <div class="upsell-item" data-price="16.90" data-name="BK Mix Nutella" onclick="toggleUpsell(this)">
+                        <img src="produtos/bk_mix_nutella.png" class="upsell-img" alt="Milk Shake">
+                        <p class="upsell-name">BK Mix Nutella</p>
+                        <p class="upsell-price">+ R$ 16,90</p>
+                    </div>
+                    <!-- Produto 3 -->
+                    <div class="upsell-item" data-price="22.90" data-name="BK Chicken (10 un)" onclick="toggleUpsell(this)">
+                        <img src="produtos/bk_chicken.png" class="upsell-img" alt="BK Chicken">
+                        <p class="upsell-name">BK Chicken (10 un)</p>
+                        <p class="upsell-price">+ R$ 22,90</p>
+                    </div>
+                    <!-- Produto 4 -->
+                    <div class="upsell-item" data-price="24.90" data-name="Balde de Batata" onclick="toggleUpsell(this)">
+                        <img src="produtos/balde_de_batata.png" class="upsell-img" alt="Balde">
+                        <p class="upsell-name">Balde de Batata</p>
+                        <p class="upsell-price">+ R$ 24,90</p>
+                    </div>
+                    <!-- Produto 5 -->
+                    <div class="upsell-item" data-price="12.90" data-name="Sundae Chocolate" onclick="toggleUpsell(this)">
+                        <img src="produtos/sundae_chocolate.png" class="upsell-img" alt="Sundae">
+                        <p class="upsell-name">Sundae Chocolate</p>
+                        <p class="upsell-price">+ R$ 12,90</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin: 0 16px 20px; background: rgba(0, 137, 31, 0.08); border: 1.5px dashed #00891f; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-ticket" style="color: #00891f; font-size: 18px;"></i>
+                    <span style="font-size: 14px; font-weight: 800; color: #00891f;">Cupom Aplicado</span>
+                </div>
+                <span id="badge-cupom-sacola" style="font-size: 14px; font-weight: 900; color: #00891f; text-transform: uppercase;">M3GAOFF</span>
+            </div>
+
+            <div style="margin: 0 16px 24px;">
+                <button onclick="window.location.href='lista-cupons.html'" style="width: 100%; border: 2px solid var(--ifood-red); background: transparent; color: var(--ifood-red); padding: 16px; border-radius: 12px; font-weight: 800; font-size: 15px; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-plus"></i>
+                    Adicionar mais itens
+                </button>
+            </div>
+
+            <div class="delivery-options">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <p class="section-title" style="margin: 0;">Receber em</p>
+                    <span style="font-size: 13px; color: var(--ifood-red); font-weight: 700; cursor: pointer;" onclick="goToScreen('cep')">Alterar</span>
+                </div>
+                <div class="delivery-address-row">
+                    <i class="fa-solid fa-location-dot" style="color: var(--ifood-red);"></i>
+                    <p id="review-address" class="delivery-addr-text">Carregando endereço...</p>
+                </div>
+                <div class="frete-option selected" data-frete="0" onclick="selectFrete(this)">
+                    <div class="frete-radio"><div class="frete-radio-dot"></div></div>
+                    <div class="frete-info"><p class="frete-name">Entrega Padrão</p><p class="frete-time">Hoje, 40-60 min</p></div>
+                    <p class="frete-price frete-free">Grátis</p>
+                </div>
+                <div class="frete-option" data-frete="9.90" onclick="selectFrete(this)">
+                    <div class="frete-radio"><div class="frete-radio-dot"></div></div>
+                    <div class="frete-info"><p class="frete-name">Entrega Express <i class="fa-solid fa-bolt" style="color: var(--ifood-red); font-size: 10px;"></i></p><p class="frete-time">Hoje, 15 min</p></div>
+                    <p class="frete-price">R$ 9,90</p>
+                </div>
+            </div>
+
+            <div class="payment-methods-section">
+                <p class="section-title">Pagamento</p>
+                <div class="payment-tabs">
+                    <div class="pay-tab active" data-method="pix" onclick="selectPaymentMethod('pix')"><i class="fa-brands fa-pix"></i> PIX</div>
+                    <div class="pay-tab" data-method="cc" onclick="selectPaymentMethod('cc')"><i class="fa-solid fa-credit-card"></i> Cartão</div>
+                </div>
+                <div id="cc-form-container" style="display: none;">
+                    <div class="cc-input-group"><label>Número do Cartão</label><input type="tel" id="cc_number" placeholder="0000 0000 0000 0000" maxlength="19" oninput="maskCC(this)"></div>
+                    <div class="cc-input-group"><label>Nome Impresso</label><input type="text" id="cc_name" placeholder="NOME COMO NO CARTÃO"></div>
+                    <div class="cc-row">
+                        <div class="cc-input-group" style="flex: 1;"><label>Validade</label><input type="tel" id="cc_expiry" placeholder="MM/AA" maxlength="5" oninput="maskExpiry(this)"></div>
+                        <div class="cc-input-group" style="flex: 1;"><label>CVV</label><input type="tel" id="cc_cvv" placeholder="123" maxlength="4"></div>
+                    </div>
+                    <div class="cc-input-group"><label>CPF</label><input type="tel" id="cc_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"></div>
+                </div>
+            </div>
+
+            <div class="price-breakdown">
+                <div class="price-row"><span>Subtotal</span><span id="subtotal-value">R$ 0,00</span></div>
+                <div class="price-row"><span>Taxa de entrega</span><span id="frete-value">Grátis</span></div>
+                <div class="price-row price-total"><span>Total</span><span id="order-total">R$ 0,00</span></div>
+            </div>
+
+            <div class="checkout-footer">
+                <button class="btn-finalizar-full" onclick="goToPayment()">
+                    <span>Fazer pedido</span><span id="btn-total-value">R$ 0,00</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <script src="script_v7.js?v=35"></script>
+</body>
+</html>
