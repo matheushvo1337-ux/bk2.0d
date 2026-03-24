@@ -20,25 +20,29 @@
     <script src="script_v7.js?v=35"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const copies = [
+            const el = document.getElementById('loading-copy');
+            const messages = [
                 'Localizando restaurante mais próximo...',
                 'Verificando disponibilidade de lanches...',
                 'Aplicando descontos exclusivos de aniversário...',
                 'Tudo pronto! Seu combo foi separado.'
             ];
-            const el = document.getElementById('loading-copy');
-            if (el) el.textContent = copies[Math.floor(Math.random() * copies.length)];
             
-            // REDIRECIONAMENTO BLINDADO: Tenta várias formas para evitar o loading infinito
-            setTimeout(() => {
-                console.log('Iniciando redirecionamento forçado...');
-                // Tenta navegar para sacola.html
-                try {
-                    window.location.replace('sacola.html');
-                } catch(e) {
-                    window.location.href = 'sacola.html';
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < messages.length) {
+                    if (el) el.textContent = messages[i];
+                    i++;
+                } else {
+                    clearInterval(interval);
                 }
-            }, 2500); // Um pouco mais de tempo para ser realista
+            }, 800); // Muda a mensagem a cada 800ms
+            
+            // REDIRECIONAMENTO BLINDADO V9.5
+            setTimeout(() => {
+                console.log('Finalizando processamento e indo para a sacola...');
+                window.location.replace('sacola.html');
+            }, 3500); // 3.5 segundos para dar tempo de ler as mensagens
         });
     </script>
 </body>

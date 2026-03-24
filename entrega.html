@@ -4,77 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burger King - Acompanhe seu Pedido</title>
-    <link rel="stylesheet" href="style.css?v=29">
+    <link rel="stylesheet" href="style.css?v=40">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { background-color: #f7f7f7 !important; }
+        body { background: #f2f2f2 !important; font-family: 'Outfit', sans-serif; overflow: hidden; }
+        .delivery-map-container { position: relative; height: 100vh; background: #e0e0e0; overflow: hidden; }
+        #map-root { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; }
+        .map-overlay { position: absolute; top:0; left:0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.1) 100%); }
+        
+        .gps-dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; pointer-events: none; }
+        .gps-dot .dot { width: 14px; height: 14px; background: #ea1d2c; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.3); position: relative; }
+        .gps-dot .pulse { width: 40px; height: 40px; background: rgba(234, 29, 44, 0.4); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulse-gps 2s infinite; }
+        
+        @keyframes pulse-gps {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
+        .delivery-card-overlay { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 440px; background: #fff; border-radius: 24px 24px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); padding: 20px; z-index: 20; }
+        .delivery-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .delivery-status { flex: 1; }
+        .status-badge { display: inline-block; background: #dcfce7; color: #16a34a; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; text-transform: uppercase; }
+        .status-title { font-size: 20px; font-weight: 950; color: #3e3e3e; margin: 0; line-height: 1.2; }
+        .eta-box { text-align: right; }
+        .eta-label { font-size: 11px; color: #717171; font-weight: 700; display: block; }
+        .eta-time { font-size: 22px; font-weight: 950; color: #ea1d2c; }
+
+        .progress-stepper { display: flex; gap: 8px; margin-bottom: 25px; }
+        .step { flex: 1; height: 6px; background: #e5e7eb; border-radius: 4px; position: relative; overflow: hidden; }
+        .step.filled::after { content: ''; position: absolute; top:0; left:0; width: 100%; height: 100%; background: #16a34a; animation: fill-step 0.5s ease forwards; }
+        @keyframes fill-step { 0% { width: 0; } 100% { width: 100%; } }
+
+        .delivery-details { border-top: 1px solid #f3f4f6; padding-top: 15px; }
+        .detail-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+        .detail-icon { width: 40px; height: 40px; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ea1d2c; font-size: 18px; }
+        .detail-info { flex: 1; }
+        .detail-main { font-size: 14px; font-weight: 800; color: #3e3e3e; display: block; }
+        .detail-sub { font-size: 12px; font-weight: 600; color: #717171; }
+        
+        #btn-chat-motoboy { width: 100%; background: #f3f4f6; color: #3e3e3e; font-weight: 950; padding: 14px; border-radius: 16px; border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; border: 1.5px solid #e5e7eb; }
+        
+        /* Simulação de Movimento */
+        @keyframes motor-move {
+            0% { top: 40%; left: 45%; }
+            50% { top: 38%; left: 48%; }
+            100% { top: 41%; left: 52%; }
+        }
+        .moving { animation: motor-move 30s linear infinite; }
     </style>
 </head>
 <body>
-    <div class="app-frame" style="background: #f7f7f7;">
-        <section class="active screen" id="screen-delivery" style="padding: 0;">
-            <div class="ifood-map-bg">
-                <div id="ifood-map" style="width: 100%; height: 100%;"></div>
-                <button class="ifood-back-btn" onclick="goToScreen('stores')"><i class="fa-solid fa-arrow-left"></i></button>
-                <div class="ifood-status-card">
-                    <h3 id="ifood-status-text">Confirmando seu pedido...</h3>
-                    <div class="ifood-progress-bar">
-                        <div class="ifood-progress-step active"></div>
-                        <div class="ifood-progress-step"></div>
-                        <div class="ifood-progress-step"></div>
-                        <div class="ifood-progress-step"></div>
-                    </div>
-                    <div class="ifood-eta"><span>Chega em</span><strong id="ifood-eta-time">45-55 min</strong></div>
-                </div>
+    <div class="app-frame" style="padding: 0;">
+        <div class="delivery-map-container">
+            <div id="map-root"></div>
+            <div class="map-overlay"></div>
+            <div class="gps-dot moving" id="gps-motor">
+                <div class="pulse"></div>
+                <div class="dot"><i class="fa-solid fa-motorcycle" style="font-size: 7px; color: #fff; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i></div>
             </div>
-            <div class="ifood-bottom-sheet">
-                <div class="ifood-drag-handle"></div>
-                <div class="ifood-section">
-                    <h4 class="ifood-section-title">Endereço de entrega</h4>
-                    <div class="ifood-address-row">
-                        <div class="ifood-pin-icon"><i class="fa-solid fa-location-dot"></i></div>
-                        <div>
-                            <span id="ifood-street-number" class="ifood-text-main">...</span>
-                            <span id="ifood-neighborhood-city" class="ifood-text-sub">...</span>
+            
+            <div class="delivery-card-overlay">
+                <div class="delivery-header">
+                    <div class="delivery-status">
+                        <span class="status-badge" id="status-badge">Confirmado</span>
+                        <h2 class="status-title" id="status-title">Preparando seu pedido...</h2>
+                    </div>
+                    <div class="eta-box">
+                        <span class="eta-label">Chegada em</span>
+                        <span class="eta-time" id="ifood-eta-time">35-45<small style="font-size: 12px;"> min</small></span>
+                    </div>
+                </div>
+
+                <div class="progress-stepper">
+                    <div class="step filled"></div>
+                    <div class="step" id="step-2"></div>
+                    <div class="step" id="step-3"></div>
+                    <div class="step" id="step-4"></div>
+                </div>
+
+                <div class="delivery-details">
+                    <div class="detail-row">
+                        <div class="detail-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-main" id="ifood-street-number">Carregando endereço...</span>
+                            <span class="detail-sub" id="ifood-neighborhood-city">...</span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-icon"><i class="fa-solid fa-store"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-main">Burger King</span>
+                            <span class="detail-sub">Unidade mais próxima confirmada</span>
                         </div>
                     </div>
                 </div>
-                <div class="ifood-section">
-                    <h4 class="ifood-section-title">Detalhes do pedido</h4>
-                    <div class="ifood-detail-row">
-                        <div class="ifood-merchant-icon"><img src="https://www.burgerking.com.br/images/bklogos/BK-novo-logo.svg" alt="BK"></div>
-                        <div style="flex: 1;"><span class="ifood-text-main">Burger King</span><span class="ifood-text-sub">Combo Celebração 5 Anos</span></div>
-                    </div>
-                </div>
+
+                <button id="btn-chat-motoboy">
+                    <i class="fa-regular fa-comment-dots"></i> Converse com o entregador
+                </button>
             </div>
-        </section>
+        </div>
     </div>
-    <script src="script_v7.js?v=35"></script>
+
+    <!-- Moto Sound Effects -->
+    <audio id="push-sound" src="https://www.myinstants.com/media/sounds/push-ifood.mp3"></audio>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script_v7.js?v=42"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-             // Mock do Endereço
-             if(state.street) {
-                 document.getElementById('ifood-street-number').textContent = `${state.street}, ${state.number}`;
-                 document.getElementById('ifood-neighborhood-city').textContent = `${state.neighborhood}, ${state.city}`;
-             }
-             // Inicia animação de tracking (ifood style)
-             const steps = document.querySelectorAll('.ifood-progress-step');
-             const statusTxt = document.getElementById('ifood-status-text');
-             let step = 0;
-             const messages = [
-                 'Confirmando pedido...',
-                 'O BK está preparando seu Whopper!',
-                 'Pedido saindo para entrega...',
-                 'O entregador está a caminho!'
-             ];
-             setInterval(() => {
-                 if(step < 3) {
-                     step++;
-                     steps[step].classList.add('active');
-                     statusTxt.textContent = messages[step];
-                 }
-             }, 8000);
+        document.addEventListener('DOMContentLoaded', async () => {
+            // RELOAD STATE (Garante captura após redirecionamento)
+            if(typeof loadState === 'function') loadState();
+            
+            const city = (state && state.city) ? state.city : 'São Paulo';
+            const street = (state && state.street) ? state.street : '';
+            const num = (state && state.number) ? state.number : '';
+            const neigh = (state && state.neighborhood) ? state.neighborhood : '';
+
+            // 📍 RENDERIZAR ENDEREÇO
+            const streetEl = document.getElementById('ifood-street-number');
+            const neighEl = document.getElementById('ifood-neighborhood-city');
+            if(streetEl) streetEl.textContent = street ? `${street}, ${num}` : (state.cep ? `CEP ${state.cep}, Nº ${num}` : 'Endereço em processamento...');
+            if(neighEl) neighEl.textContent = neigh ? `${neigh}, ${city}` : city;
+
+            const title = document.getElementById('status-title');
+            const badge = document.getElementById('status-badge');
+            
+            // 🧠 MOTOR DE MAPA REAL (Leaflet + Nominatim)
+            try {
+                const map = L.map('map-root', { zoomControl: false, attributionControl: false }).setView([-23.5505, -46.6333], 13);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+                const geocode = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city + ', Brazil')}`).then(r => r.json());
+                if (geocode.length > 0) {
+                    const lat = parseFloat(geocode[0].lat);
+                    const lon = parseFloat(geocode[0].lon);
+                    map.setView([lat, lon], 15);
+                }
+            } catch(e) { 
+                console.warn("Map fail, using fallback UI."); 
+                document.getElementById('map-root').style.background = "#e5e7eb";
+            }
+
+            // ⌚ PROGRESSO DINÂMICO
+            const timeline = [
+                { time: 6000, title: 'O BK está preparando o seu combo!', badge: 'Em preparo', step: 'step-2' },
+                { time: 15000, title: 'Pedido saiu para entrega!', badge: 'Em rota', step: 'step-3' },
+                { time: 25000, title: 'O entregador está na sua rua!', badge: 'Quase lá', step: 'step-4' }
+            ];
+
+            timeline.forEach(event => {
+                setTimeout(() => {
+                    if(title) title.textContent = event.title;
+                    if(badge) badge.textContent = event.badge;
+                    const s = document.getElementById(event.step);
+                    if(s) s.classList.add('filled');
+                    const aud = document.getElementById('push-sound');
+                    if(aud) aud.play().catch(()=>{});
+                }, event.time);
+            });
+
+            // 💬 CHAT MOCK
+            const btnChat = document.getElementById('btn-chat-motoboy');
+            if(btnChat) {
+                btnChat.onclick = () => {
+                    Swal.fire({
+                        title: 'Chat iFood',
+                        text: 'O entregador está focado no trânsito e não pode responder agora. O BK garante que seu pedido chegará quentinho!',
+                        icon: 'info',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#ea1d2c'
+                    });
+                };
+            }
         });
     </script>
 </body>
