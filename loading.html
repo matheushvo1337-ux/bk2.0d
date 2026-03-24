@@ -20,16 +20,25 @@
     <script src="script_v7.js?v=35"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const copies = ['Calculando restaurante mais próximo pela sua localização...','Verificando disponibilidade de motos...','Aplicando desconto na Sacola...','Tudo pronto! Seu combo foi separado.'];
+            const copies = [
+                'Localizando restaurante mais próximo...',
+                'Verificando disponibilidade de lanches...',
+                'Aplicando descontos exclusivos de aniversário...',
+                'Tudo pronto! Seu combo foi separado.'
+            ];
             const el = document.getElementById('loading-copy');
             if (el) el.textContent = copies[Math.floor(Math.random() * copies.length)];
             
-            // Redirecionamento automático simulado se for a página standalone
+            // REDIRECIONAMENTO BLINDADO: Tenta várias formas para evitar o loading infinito
             setTimeout(() => {
-                if (window.location.pathname.includes('loading.html')) {
+                console.log('Iniciando redirecionamento forçado...');
+                // Tenta navegar para sacola.html
+                try {
+                    window.location.replace('sacola.html');
+                } catch(e) {
                     window.location.href = 'sacola.html';
                 }
-            }, 1800);
+            }, 2500); // Um pouco mais de tempo para ser realista
         });
     </script>
 </body>

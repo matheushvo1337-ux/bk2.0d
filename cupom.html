@@ -11,11 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-frame">
-        <main class="active screen" id="screen-coupon" style="background: #FDF8F2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0;">
-            <div class="premium-coupon-modal" style="box-shadow: none; border-radius: 0; max-width: 100%; height: 100%;">
-                <div class="coupon-top-bar"><span>Cupom</span></div>
-                <div style="overflow-y: auto; height: calc(100% - 54px); padding-bottom: 100px;">
+    <div class="app-frame" style="height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
+        <main class="active screen" id="screen-coupon" style="background: #FDF8F2; height: 100%; display: flex; flex-direction: column; padding: 0;">
+            <div class="coupon-top-bar" style="flex-shrink: 0;"><span>Cupom Ativo</span></div>
+            
+            <div class="coupon-content-scroll" style="flex: 1; overflow-y: auto; padding-bottom: 120px; width: 100%;">
+                <div class="premium-coupon-modal" style="box-shadow: none; border-radius: 0; max-width: 100%;">
                     <div class="coupon-hero-wrapper"><img src="hero_combo.png" alt="Combo" class="coupon-hero-img"></div>
                     <div class="coupon-info-section">
                         <div class="coupon-offer-name">Combo Celebração 5 Anos</div>
@@ -32,9 +33,14 @@
                         <div class="coupon-aux-val" id="coupon-aux-val">7RDRJ9</div>
                     </div>
                 </div>
+                
+                <div style="padding: 20px; text-align: center; font-size: 13px; color: #777;">
+                    Apresente este código no caixa ou valide no delivery para garantir o desconto exclusivo de aniversário.
+                </div>
             </div>
-            <div class="coupon-fixed-cta-bar">
-                <button class="btn-v7 btn-v7-primary coupon-footer-btn pulse-glow" onclick="goToScreen('cep')">APROVEITAR OFERTA AGORA</button>
+
+            <div class="coupon-fixed-cta-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 1000; border-top: 1px solid #eee;">
+                <button class="btn-v7 btn-v7-primary coupon-footer-btn pulse-glow" style="width: 100%; margin: 0; height: 54px; font-size: 16px;" onclick="window.location.href='funil.html'">APROVEITAR OFERTA AGORA</button>
             </div>
         </main>
     </div>
