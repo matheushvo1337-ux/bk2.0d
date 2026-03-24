@@ -11,38 +11,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-frame" style="height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
-        <main class="active screen" id="screen-coupon" style="background: #FDF8F2; height: 100%; display: flex; flex-direction: column; padding: 0;">
-            <div class="coupon-top-bar" style="flex-shrink: 0;"><span>Cupom Ativo</span></div>
+    <div class="app-frame" style="height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: #FDF8F2;">
+        <!-- HEADER PREMIUM UNIFICADO -->
+        <header style="background: #502314; padding: 16px 20px; display: flex; align-items: center; justify-content: center; width: 100%; border-bottom: 2px solid #D62300; z-index: 10; flex-shrink: 0;">
+             <span style="color: #fff; font-family: 'Lilita One', sans-serif; font-size: 18px; letter-spacing: 0.5px; text-transform: uppercase;">Cupom Ativo</span>
+        </header>
+
+        <main class="active screen" id="screen-coupon" style="flex: 1; overflow-y: auto; padding-bottom: 15vh; width: 100%; display: flex; flex-direction: column;">
             
-            <div class="coupon-content-scroll" style="flex: 1; overflow-y: auto; padding-bottom: 120px; width: 100%;">
-                <div class="premium-coupon-modal" style="box-shadow: none; border-radius: 0; max-width: 100%;">
-                    <div class="coupon-hero-wrapper"><img src="hero_combo.png" alt="Combo" class="coupon-hero-img"></div>
-                    <div class="coupon-info-section">
-                        <div class="coupon-offer-name">Combo Celebração 5 Anos</div>
-                        <div class="coupon-offer-items">2 Whoppers + 1 Batata G + 1 Refri 500ml</div>
-                        <div class="coupon-alert-box success">
-                            <div class="coupon-alert-icon success"><i class="fa-solid fa-circle-check"></i></div>
-                            <div class="coupon-alert-text">Este cupom agora é seu!<br><span id="coupon-validity-text">Válido até hoje</span></div>
-                        </div>
-                    </div>
-                    <div class="coupon-code-area">
-                        <span class="coupon-code-label">Código do cupom</span>
-                        <div class="coupon-dashed-box"><span class="coupon-final-value" id="coupon-final-code">XX XX X</span></div>
-                        <div class="coupon-aux-label">Código auxiliar</div>
-                        <div class="coupon-aux-val" id="coupon-aux-val">7RDRJ9</div>
-                    </div>
-                </div>
-                
-                <div style="padding: 20px; text-align: center; font-size: 13px; color: #777;">
-                    Apresente este código no caixa ou valide no delivery para garantir o desconto exclusivo de aniversário.
-                </div>
+            <div class="coupon-hero-wrapper" style="width: 100%; line-height: 0;">
+                <img src="hero_combo.png" alt="Combo" class="coupon-hero-img" style="width: 100%; display: block;">
             </div>
 
-            <div class="coupon-fixed-cta-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 1000; border-top: 1px solid #eee;">
-                <button class="btn-v7 btn-v7-primary coupon-footer-btn pulse-glow" style="width: 100%; margin: 0; height: 54px; font-size: 16px;" onclick="window.location.href='funil.html'">APROVEITAR OFERTA AGORA</button>
+            <div class="premium-coupon-content" style="padding: 24px 20px; flex: 1;">
+                <div class="coupon-info-header" style="text-align: center; margin-bottom: 20px;">
+                    <h1 class="coupon-offer-name" style="font-family: 'Lilita One', sans-serif; font-size: 28px; color: #502314; margin-bottom: 4px; line-height: 1.1;">Combo Celebração 5 Anos</h1>
+                    <p class="coupon-offer-items" style="font-family: 'Outfit', sans-serif; font-weight: 700; color: #8A7060; font-size: 14px;">2 Whoppers + 1 Batata G + 1 Refri 500ml</p>
+                </div>
+
+                <div class="coupon-status-box" style="background: #EDF7ED; border: 1px solid rgba(22,163,74,0.1); border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                    <div style="width: 28px; height: 28px; background: #16A34A; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff;">
+                        <i class="fa-solid fa-check" style="font-size: 14px;"></i>
+                    </div>
+                    <div>
+                        <p style="font-weight: 900; color: #502314; font-size: 13px; margin: 0;">Resgate ativado com sucesso!</p>
+                        <p id="coupon-validity-text" style="color: #16A34A; font-size: 11px; font-weight: 700; margin: 0;">Válido até hoje</p>
+                    </div>
+                </div>
+
+                <div class="coupon-code-container" style="text-align: center; margin-top: 10px;">
+                    <span style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 11px; color: #8A7060; text-transform: uppercase; letter-spacing: 1.5px;">CÓDIGO DO CUPOM</span>
+                    <div style="margin-top: 12px; border: 2.5px dashed #D3C6B9; border-radius: 16px; padding: 22px 10px; background: #fff;">
+                        <span id="coupon-final-code" style="font-family: 'Lilita One', sans-serif; font-size: 38px; color: #502314; letter-spacing: 1px;">XX XX X</span>
+                    </div>
+                    <div style="margin-top: 15px; color: #B9ABA0; font-size: 12px; font-style: italic; font-weight: 600;">Apresente no caixa ou valide no APP</div>
+                </div>
             </div>
         </main>
+
+        <div class="coupon-cta-sticky" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.08); z-index: 1000; border-top: 1.5px solid #F2EDE1;">
+            <button class="btn-v7 btn-v7-primary pulse-glow" 
+                    style="width: 100%; height: 64px; border-radius: 100px; background: #D62300; border: none; color: #fff; font-family: 'Lilita One', sans-serif; font-size: 20px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0 20px; transition: transform 0.2s; letter-spacing: 0.5px;" 
+                    onclick="window.location.href='dados.html'">
+                APROVEITAR OFERTA AGORA
+            </button>
+        </div>
     </div>
     <script src="script_v7.js?v=35"></script>
 </body>
