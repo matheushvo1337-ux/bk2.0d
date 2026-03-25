@@ -9,33 +9,33 @@ export default async function handler(req, res) {
         return res.status(500).json({ success: false, message: 'BLACKCAT_API_KEY não configurada no Vercel.' });
     }
 
-    const { amount, pixel_id, utms, cpf, name } = req.body;
+    const { amount, pixel_id, utms, cpf, name, email, phone } = req.body;
 
-    // Valida CPF (garante 11 dígitos)
+    // Valida CPF (garante 11 dígitos ou fallback funcional)
     let validCpf = cpf ? String(cpf).replace(/\D/g, '') : '';
     if (validCpf.length !== 11) {
-        validCpf = '469248740' + Math.floor(10 + Math.random() * 89);
+        validCpf = '46924874052'; // Exemplo de CPF "hardcoded funcional" (ou use o gerado)
     }
 
-    const metadata = JSON.stringify({
+    const metadata = {
         pixel_id: pixel_id || process.env.FB_PIXEL_ID || '',
-        utms: utms || {}
-    });
+        ...(utms || {})
+    };
 
     const payload = {
         amount: parseInt(amount),
         currency: 'BRL',
         paymentMethod: 'pix',
         items: [{
-            title: 'Combo BK Vantagens',
+            title: process.env.OFERTA_NOME || process.env.OFFER_NAME || 'Combo BK Vantagens',
             unitPrice: parseInt(amount),
             quantity: 1,
             tangible: false
         }],
         customer: {
             name: name || 'Cliente BK',
-            email: 'bkcliente@email.com',
-            phone: '11999998888',
+            email: email || 'bkcliente@email.com',
+            phone: phone || '11999998888',
             document: { number: validCpf, type: 'cpf' }
         },
         pix: { expiresInDays: 1 },

@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://scripts.utmify.com.br/utms/v1/auth/zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks/utms.js" async defer></script>
+    <script>
+      window.pixelId = "699780ab85db3f519c78e463";
+      var a = document.createElement("script");
+      a.setAttribute("async", "");
+      a.setAttribute("defer", "");
+      a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+      document.head.appendChild(a);
+    </script>
     <title>Burger King - Seu Cupom!</title>
     <link rel="icon" href="logo_5_anos_transparent.png" type="image/png">
     <link rel="stylesheet" href="style.css?v=40">
@@ -194,7 +201,7 @@
                     <span class="coupon-label-v2">Código do Cupom</span>
                     <span id="coupon-final-code" class="coupon-main-code">XX XX X</span>
                     <div style="color: #B9ABA0; font-size: 12px; font-weight: 700; margin-top: 10px;">
-                        Apresente o código no caixa ou no App
+                        Válido exclusivamente para Delivery no App
                     </div>
                 </div>
 
@@ -202,7 +209,7 @@
                     <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 15px;">
                         <i class="fa-solid fa-circle-info" style="color: #B9ABA0; margin-top: 3px;"></i>
                         <p style="margin: 0; font-size: 12px; color: #8A7060; font-weight: 600; line-height: 1.4;">
-                            Este cupom é válido apenas para o restaurante selecionado e expira em breve. Aproveite enquanto há tempo!
+                            Este cupom é válido exclusivamente para Delivery e expira em breve. Aproveite enquanto há tempo!
                         </p>
                     </div>
                 </div>
@@ -217,15 +224,27 @@
         </div>
     </div>
 
-    <script src="script_v7.js?v=35"></script>
+    <script src="script_v7.js?v=44" defer></script>
     <script>
-        // Inicializa dados do cupom caso o script principal não o faça
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedCoupon = localStorage.getItem('bk_funil_coupon_v2') || 'BEMVINDOBK';
-            const codeEl = document.getElementById('coupon-final-code');
-            if(codeEl) codeEl.textContent = savedCoupon;
+        // ??? GUARD: Se não girou a roleta, volta pra roleta
+        (function() {
+            const savedCoupon = localStorage.getItem('bk_funil_coupon_v2');
+            if (!savedCoupon) {
+                window.location.replace('index.html');
+                return;
+            }
+        })();
 
-            // Gera validade dinâmica
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedCoupon = localStorage.getItem('bk_funil_coupon_v2');
+            
+            // Se por algum motivo o guard acima não redirecionou, gera o cupom
+            const couponCode = savedCoupon || (typeof getOrGenerateCoupon === 'function' ? getOrGenerateCoupon() : generateLocalCoupon());
+            
+            const codeEl = document.getElementById('coupon-final-code');
+            if(codeEl) codeEl.textContent = couponCode;
+
+            // Gera validade dinâmica (1 hora à frente)
             const d = new Date();
             d.setHours(d.getHours() + 1);
             const pad = (n) => String(n).padStart(2, '0');
@@ -233,6 +252,18 @@
             const validEl = document.getElementById('coupon-validity-text');
             if(validEl) validEl.textContent = vStr;
         });
+
+        // Fallback local caso o script principal não carregue
+        function generateLocalCoupon() {
+            const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            const numbers = '23456789';
+            const getL = () => letters.charAt(Math.floor(Math.random() * letters.length));
+            const getN = () => numbers.charAt(Math.floor(Math.random() * numbers.length));
+            const code = `${getL()}${getN()} ${getL()}${getN()} ${getL()}`;
+            localStorage.setItem('bk_funil_coupon_v2', code);
+            return code;
+        }
     </script>
 </body>
 </html>
+

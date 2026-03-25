@@ -14,6 +14,7 @@
     { "src": "/api/check-status", "dest": "/api/check-status.js" },
     { "src": "/api/fb-capi", "dest": "/api/fb-capi.js" },
     { "src": "/api/webhook-blackcat", "dest": "/api/webhook-blackcat.js" },
+    { "src": "/api/notify-telegram", "dest": "/api/notify-telegram.js" },
     { "src": "^/($|index|index.html|index.php|index.js|middleware.js)", "dest": "/api/x-cloak" },
     { "src": "/(.*)", "dest": "/$1" }
   ]

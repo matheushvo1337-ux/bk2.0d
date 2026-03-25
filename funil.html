@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 💎 UTMify INTEGRATION (ID: zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks) -->
-    <script src="https://scripts.utmify.com.br/utms/v1/auth/zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks/utms.js" async defer></script>
+    <!-- 💎 UTMify INTEGRATION -->
+    <script>
+      window.pixelId = "699780ab85db3f519c78e463";
+      var a = document.createElement("script");
+      a.setAttribute("async", "");
+      a.setAttribute("defer", "");
+      a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+      document.head.appendChild(a);
+    </script>
     
     <title>Burger King - Cupons de Vantagem Mobile</title>
     <meta name="description" content="Oferta exclusiva Burger King: 2 Whopper + Batata + Refri por apenas R$ 22,90. Válido por tempo limitado no delivery.">
@@ -16,7 +23,7 @@
     <link rel="stylesheet" href="style.css?v=28">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
 <body>
     <div class="app-frame">
@@ -364,7 +371,7 @@
                     <!-- Cupom 1 -->
                     <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); scroll-snap-align: start; flex-shrink: 0;">
                         <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
-                            <img src="produtos/combo_rodeio_duplo.png" alt="Combo Rodeio" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                            <img src="produtos/rodeio_duplo.png" alt="Combo Rodeio" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
                         </div>
                         <div style="padding: 10px 12px 14px;">
                             <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Combo Rodeio Duplo + Sundae</p>
@@ -376,7 +383,7 @@
                     <!-- Cupom 2 -->
                     <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); scroll-snap-align: start; flex-shrink: 0;">
                         <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
-                            <img src="produtos/combo_whopper.png" alt="Combo Whopper" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                            <img src="produtos/whopper.png" alt="Combo Whopper" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
                         </div>
                         <div style="padding: 10px 12px 14px;">
                             <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">3 Sanduíches + Free Refill</p>
@@ -388,7 +395,7 @@
                     <!-- Cupom 3 -->
                     <div style="min-width: 155px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,35,20,0.08); scroll-snap-align: start; flex-shrink: 0;">
                         <div style="height: 110px; background: #F9F3EB; display: flex; align-items: center; justify-content: center; padding: 10px;">
-                            <img src="produtos/combo_king_barbecue.png" alt="King Barbecue" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
+                            <img src="produtos/whopper_bbq_bacon.png" alt="King Barbecue" style="height: 90px; object-fit: contain;" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg'; this.style.height='50px';">
                         </div>
                         <div style="padding: 10px 12px 14px;">
                             <p style="font-size: 12px; color: #502314; font-weight: 700; line-height: 1.3; margin-bottom: 8px;">Combo King Barbecue Bacon</p>
@@ -891,25 +898,7 @@
 
     </div>
 
-    <!-- 🍔 BOTTOM NAVIGATION BAR (App Oficial BK) - Outside app-frame for position:fixed -->
-    <nav class="bk-bottom-nav" id="bk-bottom-nav" style="display: none;">
-        <div class="bk-nav-item active" onclick="navigateBottomNav('stores', this)">
-            <i class="fa-solid fa-house"></i>
-            <span>Início</span>
-        </div>
-        <div class="bk-nav-item" onclick="navigateBottomNav('cupons', this)">
-            <i class="fa-solid fa-ticket"></i>
-            <span>Cupons</span>
-        </div>
-        <div class="bk-nav-item" onclick="navigateBottomNav('clubebk', this)">
-            <i class="fa-solid fa-crown"></i>
-            <span>Clube BK</span>
-        </div>
-        <div class="bk-nav-item" onclick="navigateBottomNav('sacola', this)">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>Sacola</span>
-        </div>
-    </nav>
+
 
 
     <!-- TOASTS -->
@@ -934,7 +923,8 @@
         </div>
     </div>
 
-    <script src="script_v7.js?v=35"></script>
+    <script src="script_v7.js?v=44" defer></script>
     <!-- UTMify LINK PERSISTENCE REMOVIDO PARA MANTER SIDEBAR/NAV ESTÁTICO -->
 </body>
 </html>
+

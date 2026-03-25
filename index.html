@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- 💎 UTMify INTEGRATION -->
-    <script src="https://scripts.utmify.com.br/utms/v1/auth/zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks/utms.js" async defer></script>
+    <script>
+      window.pixelId = "699780ab85db3f519c78e463";
+      var a = document.createElement("script");
+      a.setAttribute("async", "");
+      a.setAttribute("defer", "");
+      a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+      document.head.appendChild(a);
+    </script>
     
     <title>Burger King - Gire e Ganhe!</title>
     <link rel="icon" href="logo_5_anos_transparent.png" type="image/png">
-    <link rel="stylesheet" href="style.css?v=35">
+    <link rel="stylesheet" href="style.css?v=42">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -24,7 +31,7 @@
 
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; z-index: 10; position: relative;">
                 <span style="font-family: 'Lilita One', sans-serif; font-size: 38px; color: var(--bk-brown);">Clube BK</span>
-                <img src="logo_5_anos_transparent.png" alt="5 Anos" style="height: 44px;">
+                <img src="logo_5_anos_transparent.png" alt="5 Anos" style="height: 48px;">
             </div>
 
             <h1 class="app-headline">Gire a roleta e <br><span>ganhe sua oferta!</span></h1>
@@ -49,7 +56,7 @@
     </div>
 
     <!-- 🔧 CORE ENGINE -->
-    <script src="script_v7.js?v=35"></script>
+    <script src="script_v7.js?v=44" defer></script>
     <script>
         // Força a renderização imediata caso o DOMContentLoaded no script externo falhe por cache
         window.addEventListener('load', () => {
@@ -60,3 +67,4 @@
     </script>
 </body>
 </html>
+

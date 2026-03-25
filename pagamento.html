@@ -4,39 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burger King - Pagamento PIX</title>
-    <link rel="stylesheet" href="style.css?v=29">
+    <link rel="stylesheet" href="style.css?v=42">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
 <body style="background: #F5EBDC;">
     <div class="app-frame">
         <section class="active screen" id="screen-pix">
             <div style="text-align: center; margin-top: 30px;">
-                <h2 style="font-size: 24px; font-weight: 950; color: var(--bk-brown);">Pagamento via PIX</h2>
-                <p style="font-weight: 700; color: #666; font-size: 14px; margin-top: 5px;">Escaneie o QR Code ou copie o código</p>
+                <h2 style="font-size: 26px; font-weight: 950; color: var(--bk-brown); line-height: 1.1;">Falta pouco para<br>saborear seu BK!</h2>
             </div>
-            <div class="pix-card">
-                <div class="pix-qr-container" id="pix-qr"></div>
+            
+            <div class="pix-card" style="margin-top: 20px;">
                 <div class="pix-timer-bar">
                     <i class="fa-solid fa-clock" style="color: var(--bk-red);"></i>
                     <span>Pague em até: <strong id="pix-timer">04:59</strong></span>
                 </div>
-                <div class="pix-total">
-                    <span>Total:</span>
-                    <span style="font-weight: 950; font-size: 24px; color: var(--bk-brown);">R$ <span id="pix-total-value">22,90</span></span>
+
+                <button id="btn-new-order" onclick="window.location.href='sacola.html'" style="display: none; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 800; background: var(--bk-orange); color: #fff; border: none; padding: 12px; margin: 10px 0 20px; cursor: pointer; animation: pulseOrange 2s infinite;">
+                    <i class="fa-solid fa-rotate-right"></i> GERAR NOVO PEDIDO
+                </button>
+                
+                <div class="pix-total" style="text-align: center; margin-top: 15px;">
+                    <span style="font-size: 14px; color: #666; font-weight: 700;">Total a pagar:</span>
+                    <div style="font-weight: 950; font-size: 32px; color: #16a34a; line-height: 1.1;">R$ <span id="pix-total-value">...</span></div>
                 </div>
-                <div class="pix-code-box">
-                    <p style="font-size: 11px; font-weight: 800; color: #717171; text-transform: uppercase;">Código PIX Copia e Cola</p>
-                    <div class="pix-code-row">
-                        <div class="pix-code-text" id="pix-code">Gerando código...</div>
-                        <button class="pix-copy-btn" onclick="copyPixCode()"><i class="fa-solid fa-copy"></i></button>
+
+                <!-- 1-2-3 UX Steps -->
+                <div class="pix-steps">
+                    <div class="pix-step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">Clique no botão abaixo para copiar o código PIX.</div>
                     </div>
+                    <div class="pix-step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">Abra o aplicativo do seu banco e escolha <strong>PIX Copia e Cola</strong>.</div>
+                    </div>
+                    <div class="pix-step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">Cole o código, confirme o valor e aguarde a aprovação nesta tela!</div>
+                    </div>
+                </div>
+
+                <div class="pix-qr-container" id="pix-qr" style="display: none;"></div>
+
+                <div class="pix-code-box" style="margin-top: 15px;">
+                    <div class="pix-code-label">CÓDIGO PIX COPIA E COLA:</div>
+                    <div class="pix-code-text" id="pix-code">Gerando código...</div>
+                    <button class="pix-copy-btn pulse-green" id="btn-copy-pix" onclick="copyPixCode()" style="width: 100%; border-radius: 12px; font-size: 18px; font-weight: 900; background: #16a34a; color: #fff; border: none; padding: 18px; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4); cursor: pointer; transition: all 0.2s; margin-top: 12px;">
+                        <i class="fa-solid fa-copy"></i> COPIAR CÓDIGO PIX
+                    </button>
+                </div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="trust-badges" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; opacity: 0.7;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: #666;">
+                    <i class="fa-solid fa-lock" style="color: #16a34a;"></i> PAGAMENTO SEGURO
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: #666;">
+                    <i class="fa-solid fa-shield-halved" style="color: #0284c7;"></i> AMBIENTE CRIPTOGRAFADO
                 </div>
             </div>
 
             <div style="padding: 20px 16px;">
-                <button class="btn-finalizar-full" onclick="simulatePayment()" id="btn-confirm-pix" style="justify-content: center; display: none;">
-                    <span>Já fiz o pagamento</span>
+                <button class="btn-pix-confirm shimmer-effect" onclick="simulatePayment()" id="btn-confirm-pix" style="display: none;">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>JÁ FIZ O PAGAMENTO</span>
                 </button>
             </div>
 
@@ -46,8 +81,13 @@
             </div>
         </section>
     </div>
-    <script src="script_v7.js?v=35"></script>
+
+    <!-- Copy Toast -->
+    <div id="copy-toast" style="position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #3e3e3e; color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 13px; z-index: 9999; transition: bottom 0.3s ease;">
+        <i class="fa-solid fa-check-circle"></i> Código PIX copiado!
+    </div>
+    <script src="script_v7.js?v=44" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>
-</html>
+

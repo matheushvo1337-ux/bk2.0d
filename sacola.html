@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burger King - Sacola</title>
-    <link rel="stylesheet" href="style.css?v=31">
+    <link rel="stylesheet" href="style.css?v=42">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
 <body>
     <div class="app-frame">
@@ -21,38 +21,65 @@
                 <!-- Itens injetados via JS (iFood Style) -->
             </div>
 
-            <div class="upsell-section" style="margin-bottom: 24px;">
-                <p class="section-title">Incremente seu pedido</p>
-                <div class="upsell-carousel">
-                    <!-- Produto 1 -->
-                    <div class="upsell-item" data-price="14.90" data-name="Onion Rings" onclick="toggleUpsell(this)">
-                        <img src="produtos/onion_rings.png" class="upsell-img" alt="Onion Rings">
-                        <p class="upsell-name">Onion Rings (G)</p>
-                        <p class="upsell-price">+ R$ 14,90</p>
-                    </div>
-                    <!-- Produto 2 -->
-                    <div class="upsell-item" data-price="16.90" data-name="BK Mix Nutella" onclick="toggleUpsell(this)">
-                        <img src="produtos/bk_mix_nutella.png" class="upsell-img" alt="Milk Shake">
+            <div class="upsell-section" style="margin-bottom: 0; padding: 20px 0 20px 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-right: 16px; margin-bottom: 14px;">
+                    <p class="section-title" style="margin: 0;">Incremente seu pedido</p>
+                </div>
+                <div class="upsell-carousel" id="upsell-carousel">
+                    <!-- 1: BK Mix Nutella -->
+                    <div class="upsell-item" data-price="13.90" data-name="BK Mix Nutella" onclick="toggleUpsell(this)">
+                        <div class="upsell-discount-badge">-17%</div>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                        <img loading="lazy" src="produtos/bk_mix_nutella.png" class="upsell-img" alt="BK Mix Nutella">
                         <p class="upsell-name">BK Mix Nutella</p>
-                        <p class="upsell-price">+ R$ 16,90</p>
+                        <div class="upsell-pricing">
+                            <span class="upsell-old-price">R$ 16,90</span>
+                            <span class="upsell-new-price">R$ 13,90</span>
+                        </div>
                     </div>
-                    <!-- Produto 3 -->
-                    <div class="upsell-item" data-price="22.90" data-name="BK Chicken (10 un)" onclick="toggleUpsell(this)">
-                        <img src="produtos/bk_chicken.png" class="upsell-img" alt="BK Chicken">
-                        <p class="upsell-name">BK Chicken (10 un)</p>
-                        <p class="upsell-price">+ R$ 22,90</p>
-                    </div>
-                    <!-- Produto 4 -->
-                    <div class="upsell-item" data-price="24.90" data-name="Balde de Batata" onclick="toggleUpsell(this)">
-                        <img src="produtos/balde_de_batata.png" class="upsell-img" alt="Balde">
-                        <p class="upsell-name">Balde de Batata</p>
-                        <p class="upsell-price">+ R$ 24,90</p>
-                    </div>
-                    <!-- Produto 5 -->
-                    <div class="upsell-item" data-price="12.90" data-name="Sundae Chocolate" onclick="toggleUpsell(this)">
-                        <img src="produtos/sundae_chocolate.png" class="upsell-img" alt="Sundae">
+                    <!-- 2: Sundae Chocolate -->
+                    <div class="upsell-item" data-price="9.90" data-name="Sundae Chocolate" onclick="toggleUpsell(this)">
+                        <div class="upsell-discount-badge">-23%</div>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                        <img loading="lazy" src="produtos/sundae_chocolate.png" class="upsell-img" alt="Sundae">
                         <p class="upsell-name">Sundae Chocolate</p>
-                        <p class="upsell-price">+ R$ 12,90</p>
+                        <div class="upsell-pricing">
+                            <span class="upsell-old-price">R$ 12,90</span>
+                            <span class="upsell-new-price">R$ 9,90</span>
+                        </div>
+                    </div>
+                    <!-- 3: Maionese Temperada -->
+                    <div class="upsell-item" data-price="3.90" data-name="Maionese Temperada" onclick="toggleUpsell(this)">
+                        <div class="upsell-discount-badge">-20%</div>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                        <img loading="lazy" src="produtos/Maionese-Temperada.png" class="upsell-img" alt="Maionese Temperada">
+                        <p class="upsell-name">Maionese Extra</p>
+                        <div class="upsell-pricing">
+                            <span class="upsell-old-price">R$ 4,90</span>
+                            <span class="upsell-new-price">R$ 3,90</span>
+                        </div>
+                    </div>
+                    <!-- 4: BK Chicken 10un -->
+                    <div class="upsell-item" data-price="19.90" data-name="BK Chicken (10 un)" onclick="toggleUpsell(this)">
+                        <div class="upsell-discount-badge">-13%</div>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                        <img loading="lazy" src="produtos/bk_chicken.png" class="upsell-img" alt="BK Chicken">
+                        <p class="upsell-name">BK Chicken (10 un)</p>
+                        <div class="upsell-pricing">
+                            <span class="upsell-old-price">R$ 22,90</span>
+                            <span class="upsell-new-price">R$ 19,90</span>
+                        </div>
+                    </div>
+                    <!-- 5: Onion Rings G -->
+                    <div class="upsell-item" data-price="12.90" data-name="Onion Rings (G)" onclick="toggleUpsell(this)">
+                        <div class="upsell-discount-badge">-13%</div>
+                        <div class="upsell-check"><i class="fa-solid fa-plus"></i></div>
+                        <img loading="lazy" src="produtos/onion_rings.png" class="upsell-img" alt="Onion Rings">
+                        <p class="upsell-name">Onion Rings (G)</p>
+                        <div class="upsell-pricing">
+                            <span class="upsell-old-price">R$ 14,90</span>
+                            <span class="upsell-new-price">R$ 12,90</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,15 +89,10 @@
                     <i class="fa-solid fa-ticket" style="color: #00891f; font-size: 18px;"></i>
                     <span style="font-size: 14px; font-weight: 800; color: #00891f;">Cupom Aplicado</span>
                 </div>
-                <span id="badge-cupom-sacola" style="font-size: 14px; font-weight: 900; color: #00891f; text-transform: uppercase;">M3GAOFF</span>
+                <span id="badge-cupom-sacola" style="font-size: 14px; font-weight: 900; color: #00891f; text-transform: uppercase;">...</span>
             </div>
 
-            <div style="margin: 0 16px 24px;">
-                <button onclick="window.location.href='lista-cupons.html'" style="width: 100%; border: 2px solid var(--ifood-red); background: transparent; color: var(--ifood-red); padding: 16px; border-radius: 12px; font-weight: 800; font-size: 15px; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <i class="fa-solid fa-plus"></i>
-                    Adicionar mais itens
-                </button>
-            </div>
+            <!-- Botão removido daqui e passado para o bottom footer -->
 
             <div class="delivery-options">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -116,7 +138,10 @@
                 <div class="price-row price-total"><span>Total</span><span id="order-total">R$ 0,00</span></div>
             </div>
 
-            <div class="checkout-footer">
+            <div class="checkout-footer" style="display: flex; flex-direction: column; gap: 8px;">
+                <button onclick="window.location.href='lista-cupons.html'" class="btn-add-more">
+                    <i class="fa-solid fa-plus"></i> Adicionar mais itens
+                </button>
                 <button class="btn-finalizar-full" onclick="goToPayment()">
                     <span>Fazer pedido</span><span id="btn-total-value">R$ 0,00</span>
                 </button>
@@ -124,6 +149,17 @@
         </section>
     </div>
 
-    <script src="script_v7.js?v=35"></script>
+    <script src="script_v7.js?v=44" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Popula cupom badge dinamicamente
+            const badgeEl = document.getElementById('badge-cupom-sacola');
+            if(badgeEl) {
+                const savedCoupon = localStorage.getItem('bk_funil_coupon_v2');
+                badgeEl.textContent = savedCoupon || 'CLUBEBK5';
+            }
+        });
+    </script>
 </body>
 </html>
+

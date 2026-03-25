@@ -16,17 +16,24 @@
         li { margin-bottom: 10px; }
         footer { margin-top: 40px; text-align: center; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 20px; padding-bottom: 80px; }
         
-        /* ─── BOTTOM NAVIGATION BAR (CLONE BK) ─── */
+        /* --- BOTTOM NAVIGATION BAR (CLONE BK) --- */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap');
-        .bk-bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-between; padding: 12px 15px 8px; z-index: 990; box-shadow: 0 -4px 15px rgba(0,0,0,0.06); box-sizing: border-box; }
+        .bk-bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-between; padding: 12px 15px calc(8px + env(safe-area-inset-bottom, 10px)); z-index: 990; box-shadow: 0 -4px 15px rgba(0,0,0,0.06); box-sizing: border-box; }
         .bk-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #a18276; font-size: 10px; font-weight: 800; font-family: 'Outfit', sans-serif; gap: 4px; transition: color 0.2s; }
         .bk-nav-item i { font-size: 20px; color: #a18276; }
         .bk-nav-item.active i { color: #D62300; }
         .bk-nav-item.active span { color: #D62300; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 💎 UTMify INTEGRATION (ID: zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks) -->
-    <script src="https://scripts.utmify.com.br/utms/v1/auth/zVPcouPcZTmKYsS1wLc68nPwsULqzSkAZ5ks/utms.js" async defer></script>
+    <!-- 💎 UTMify INTEGRATION -->
+    <script>
+      window.pixelId = "699780ab85db3f519c78e463";
+      var a = document.createElement("script");
+      a.setAttribute("async", "");
+      a.setAttribute("defer", "");
+      a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+      document.head.appendChild(a);
+    </script>
 </head>
 <body>
     <header>
@@ -98,3 +105,4 @@
     </script>
 </body>
 </html>
+

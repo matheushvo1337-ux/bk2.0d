@@ -5,9 +5,9 @@ export default async function handler(req, res) {
     }
 
     const FB_ACCESS_TOKEN  = process.env.FB_ACCESS_TOKEN;
-    const FB_PIXEL_ID      = process.env.FB_PIXEL_ID;
+    const FB_PIXEL_ID      = process.env.ID_PIXEL_FB || process.env.FB_PIXEL_ID;
     const FB_TEST_CODE     = process.env.FB_TEST_CODE || '';
-    const EXTERNAL_WEBHOOK = process.env.EXTERNAL_WEBHOOK_URL || '';
+    const EXTERNAL_WEBHOOK = process.env.URL_WEBHOOK_EXTERNA || process.env.EXTERNAL_WEBHOOK_URL || '';
 
     const data = req.body;
 

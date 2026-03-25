@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burger King - Cupons</title>
+    <link rel="icon" href="logo_5_anos_transparent.png" type="image/png">
+    <link rel="stylesheet" href="style.css?v=42">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f2f2f2; margin: 0; }
+        .cupons-header {
+            background: #fff;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f2f2f2;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .cupons-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: #3e3e3e;
+            margin: 0;
+        }
+        .cupons-grid { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .cupom-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .cupom-card:active { transform: scale(0.98); }
+        .cupom-card-body {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 14px;
+        }
+        .cupom-card-img {
+            width: 80px; height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #fdf8f2;
+        }
+        .cupom-card-img img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .cupom-card-info { flex: 1; }
+        .cupom-card-info h4 {
+            font-size: 14px; font-weight: 800; color: #3e3e3e;
+            margin: 0 0 4px; line-height: 1.2;
+        }
+        .cupom-card-info p {
+            font-size: 12px; color: #717171; margin: 0 0 6px; font-weight: 500;
+        }
+        .cupom-card-price {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .cupom-card-price .old {
+            font-size: 12px; color: #a0a0a0; text-decoration: line-through; font-weight: 600;
+        }
+        .cupom-card-price .new {
+            font-size: 16px; color: #ea1d2c; font-weight: 900;
+        }
+        .cupom-card-badge {
+            background: #ea1d2c; color: #fff;
+            font-size: 11px; font-weight: 800;
+            padding: 6px 16px;
+            text-align: center;
+        }
+        .bottom-cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 440px;
+            background: #ea1d2c;
+            padding: 16px 20px calc(12px + env(safe-area-inset-bottom, 12px));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 200;
+            cursor: pointer;
+        }
+        .bottom-cart-bar span {
+            color: #fff;
+            font-weight: 800;
+            font-size: 15px;
+        }
+        .cart-badge {
+            background: #fff; color: #ea1d2c;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-frame">
+        <!-- HEADER -->
+        <div class="cupons-header">
+            <h2>Cupons Disponíveis</h2>
+            <i class="fa-solid fa-ticket" style="color: #ea1d2c; font-size: 20px;"></i>
+        </div>
+
+        <!-- CUPONS GRID -->
+        <div class="cupons-grid">
+            <!-- CUPOM PRINCIPAL (Oferta do Funil) -->
+            <div class="cupom-card" onclick="window.location.href='sacola.html'">
+                <div class="cupom-card-badge">? OFERTA EXCLUSIVA CLUBE BK 5 ANOS</div>
+                <div class="cupom-card-body">
+                    <div class="cupom-card-img">
+                        <img src="hero_combo.png" alt="Combo">
+                    </div>
+                    <div class="cupom-card-info">
+                        <h4>Combo Celebração 5 Anos</h4>
+                        <p>2 Whoppers + Batata G + Refri 500ml</p>
+                        <div class="cupom-card-price">
+                            <span class="old">R$ 62,90</span>
+                            <span class="new">R$ 22,90</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUPOM 2 -->
+            <div class="cupom-card" onclick="window.location.href='sacola.html'">
+                <div class="cupom-card-body">
+                    <div class="cupom-card-img">
+                        <img src="produtos/whopper_duplo.png" alt="Whopper Duplo">
+                    </div>
+                    <div class="cupom-card-info">
+                        <h4>Whopper Duplo</h4>
+                        <p>Carne grelhada dupla, queijo, alface</p>
+                        <div class="cupom-card-price">
+                            <span class="old">R$ 39,90</span>
+                            <span class="new">R$ 24,90</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUPOM 3 -->
+            <div class="cupom-card" onclick="window.location.href='sacola.html'">
+                <div class="cupom-card-body">
+                    <div class="cupom-card-img">
+                        <img src="produtos/mega_stacker_3_0.png" alt="Mega Stacker">
+                    </div>
+                    <div class="cupom-card-info">
+                        <h4>Mega Stacker 3.0</h4>
+                        <p>3 carnes, cheddar, bacon crocante</p>
+                        <div class="cupom-card-price">
+                            <span class="old">R$ 44,90</span>
+                            <span class="new">R$ 29,90</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUPOM 4 -->
+            <div class="cupom-card" onclick="window.location.href='sacola.html'">
+                <div class="cupom-card-body">
+                    <div class="cupom-card-img">
+                        <img src="produtos/bk_chicken.png" alt="BK Chicken">
+                    </div>
+                    <div class="cupom-card-info">
+                        <h4>BK Chicken 10 un</h4>
+                        <p>Frango crocante empanado</p>
+                        <div class="cupom-card-price">
+                            <span class="old">R$ 32,90</span>
+                            <span class="new">R$ 22,90</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Espaço para o bottom bar -->
+            <div style="height: 80px;"></div>
+        </div>
+
+        <!-- BOTTOM CART BAR -->
+        <div class="bottom-cart-bar" onclick="window.location.href='sacola.html'">
+            <span><i class="fa-solid fa-bag-shopping"></i> Ver sacola</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="cart-total-bar">R$ 22,90</span>
+                <div class="cart-badge" id="cart-count-badge">3</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script_v7.js?v=44" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof loadState === 'function') loadState();
+            // Atualiza o badge do carrinho com dados do state
+            const totalEl = document.getElementById('cart-total-bar');
+            const countEl = document.getElementById('cart-count-badge');
+            if(totalEl && state.cartItems) {
+                const total = state.cartItems.reduce((acc, i) => acc + (i.price * i.qty), 0);
+                totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            }
+            if(countEl && state.cartItems) {
+                countEl.textContent = state.cartItems.reduce((acc, i) => acc + i.qty, 0);
+            }
+        });
+    </script>
+</body>
+</html>
+

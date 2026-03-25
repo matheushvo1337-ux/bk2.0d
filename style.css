@@ -42,6 +42,10 @@
   /* Font */
   --font: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   
+  /* Safe Areas */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 12px);
+  
   /* BK Ultimate Tokens 2025 */
   --bk-glass: rgba(255, 255, 255, 0.82);
   --bk-glass-border: rgba(255, 255, 255, 0.5);
@@ -61,9 +65,6 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
-  height: -webkit-fill-available;
-  overflow: hidden !important;
   max-width: 100%;
   -webkit-text-size-adjust: 100%;
 }
@@ -73,15 +74,10 @@ body {
   color: var(--bk-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: fixed;
-  top: 0; 
-  left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
   overscroll-behavior: none;
-  touch-action: none;
 }
 
 /* Remove scrollbars globally but keep functionality */
@@ -101,11 +97,15 @@ body {
   margin: 0 auto;
   height: 100%;
   background: #ffffff !important; /* Force iFood white base */
-  display: block;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  overflow-y: auto;
+  overflow-y: scroll; /* Force scrolling context */
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
 /* ─── 4. HEADER NATIVO BK ─── */
@@ -125,8 +125,9 @@ body {
   flex: 1;
   display: none;
   flex-direction: column;
-  padding: 0 16px 32px;
+  padding: 0 16px 40px;
   position: relative;
+  overflow: visible; /* Prevent nested scrolling */
 }
 .screen.active {
   display: flex;
@@ -189,6 +190,11 @@ body {
 @keyframes pulseGreen {
   0%   { transform: scale(1); opacity: 1; }
   100% { transform: scale(3); opacity: 0; }
+}
+@keyframes pulseOrange {
+  0%   { box-shadow: 0 0 0 0 rgba(237, 105, 5, 0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(237, 105, 5, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(237, 105, 5, 0); }
 }
 @keyframes pointerBounce {
   from { transform: translateX(-50%) translateY(0); }
@@ -783,16 +789,33 @@ body {
   padding: 10px 0 0; font-weight: 700; color: var(--bk-muted); font-size: 14px;
 }
 .pix-code-box {
-  background: #fff; border-radius: 18px; padding: 14px 16px;
-  margin-top: 16px; box-shadow: var(--shadow-card);
+  background: #f8f8f8;
+  border-radius: 18px;
+  padding: 20px;
+  margin-top: 16px;
+  border: 1.5px solid #eee;
+  text-align: left;
 }
-.pix-code-row {
-  display: flex; align-items: center; gap: 10px; margin-top: 8px;
+.pix-code-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #999;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 .pix-code-text {
-  flex: 1; font-size: 11px; font-weight: 700;
-  color: var(--bk-brown); word-break: break-all;
-  line-height: 1.45; font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #502314;
+  word-break: break-all;
+  line-height: 1.5;
+  font-family: 'Courier New', monospace;
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  max-height: 120px;
+  overflow-y: auto;
 }
 .pix-copy-btn {
   width: 42px; height: 42px; border-radius: 13px; border: none;
@@ -1051,7 +1074,7 @@ body {
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(0,0,0,0.06);
   display: flex; justify-content: space-between;
-  padding: 10px 6px 22px;
+  padding: 10px 6px calc(22px + env(safe-area-inset-bottom, 10px));
   z-index: 2000;
   box-shadow: 0 -4px 20px rgba(80,35,20,0.06);
 }
@@ -2242,7 +2265,7 @@ body, .app-frame, html {
   max-width: 480px;
   margin: 0 auto;
   background: linear-gradient(to top, #FDF8F2 85%, transparent);
-  padding: 15px 20px 25px 20px;
+  padding: 15px 20px calc(25px + env(safe-area-inset-bottom, 10px)) 20px;
   z-index: 999;
 }
 
@@ -2346,7 +2369,7 @@ body, .app-frame, html {
   border-top: 1px solid var(--bk-border);
   display: flex;
   z-index: 9999;
-  padding: 8px 0 env(safe-area-inset-bottom, 6px);
+  padding: 8px 0 var(--safe-area-bottom);
   box-shadow: 0 -2px 10px rgba(80,35,20,0.06);
 }
 .bk-nav-item {
@@ -2416,16 +2439,27 @@ body, .app-frame, html {
 }
 
 #screen-review {
-  display: block !important; /* Scorch-earth: break any flex-basis loop */
+  display: none !important; /* Escondido por padrão, aparece apenas com .active */
   background: #FFFFFF !important;
   color: #3e3e3e;
   font-family: 'Outfit', sans-serif !important;
   width: 100% !important;
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   padding: 0 !important;
   margin: 0 !important;
   position: relative;
   z-index: 10;
+}
+
+#screen-review.active {
+  display: flex !important;
+  flex-direction: column;
+  overflow: visible !important; /* Fix iOS: Let app-frame handle scrolling */
+  -webkit-overflow-scrolling: touch !important;
+  flex: 1;
+  min-height: 0 !important;
+  height: auto !important; /* Allow growing */
 }
 
 .review-header {
@@ -2767,33 +2801,64 @@ body, .app-frame, html {
 .frete-price { font-weight: 600; color: #3e3e3e; font-size: 14px; }
 .frete-free { color: #00891f; font-weight: 700; }
 
-/* Payment Methods iFood */
+/* 💳 PAYMENT METHODS (BK PREMIUM REPLICA) */
+.payment-methods-section {
+  background: #fff;
+  border-radius: 28px;
+  margin: 0 0 24px; /* Removido margin horizontal para usar width 100% + padding lateral do parent */
+  width: 100%;
+  padding: 32px 24px;
+  box-shadow: 0 12px 40px rgba(80,35,20,0.08);
+  border: 1px solid var(--bk-cream-dark);
+}
+
+.payment-methods-section .section-title {
+  font-size: 18px !important;
+  color: var(--bk-brown) !important;
+  margin-bottom: 20px !important;
+  font-weight: 900 !important;
+}
+
 .payment-tabs {
   display: flex;
-  gap: 12px;
-  margin: 16px 0;
+  gap: 16px; /* Aumentado gap */
+  margin: 0;
 }
 
 .pay-tab {
   flex: 1;
-  padding: 12px;
-  border-radius: 8px; /* Mais arredondado */
-  border: 1px solid #e8e8e8;
+  padding: 24px 12px; /* Aumentado padding vertical significativamente */
+  border-radius: 18px;
+  border: 2px solid #F2EDE1;
+  background: #FDF8F2;
   text-align: center;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: 850;
+  font-size: 15px;
+  color: #A18276;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: #fff;
+  gap: 12px; /* Aumentado gap entre ícone e texto */
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pay-tab i {
+  font-size: 20px;
+  opacity: 0.7;
 }
 
 .pay-tab.active {
-  border-color: var(--ifood-red);
-  color: var(--ifood-red);
+  border-color: var(--bk-flame);
+  color: var(--bk-flame);
   background: #fff;
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(214,35,0,0.12);
+}
+
+.pay-tab.active i {
+  opacity: 1;
 }
 
 .cc-input-group label {
@@ -2902,57 +2967,67 @@ body, .app-frame, html {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(400%); }
 }
-/* price-breakdown */
+/* 💰 PRICE BREAKDOWN (ULTIMATE HIERARCHY) */
 .price-breakdown {
   background: #fff;
-  border-radius: 20px;
-  margin: 0 16px 120px; /* Margem inferior de 120px para não ser coberto pelo sticky footer */
-  padding: 20px;
-  box-shadow: 0 4px 16px rgba(80,35,20,0.06);
+  border-radius: 28px;
+  margin: 0 0 140px; 
+  width: 100%;
+  padding: 32px 24px;
+  box-shadow: 0 12px 40px rgba(80,35,20,0.08);
+  border: 1px solid var(--bk-cream-dark);
 }
-/* Totals iFood */
+
 .price-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: var(--ifood-gray);
-}
-
-.price-row span:last-child {
-  color: #3e3e3e;
-  font-weight: 500;
-}
-
-.price-total {
-  border-top: 1px solid #f2f2f2;
-  margin-top: 12px;
-  padding-top: 12px;
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  color: #3e3e3e !important;
-}
-
-.price-total span:last-child {
-  font-size: 18px;
+  display: flex !important;
+  width: 100% !important;
+  justify-content: space-between !important;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: var(--bk-muted);
   font-weight: 700;
 }
 
-.frete-free-text {
-  color: #00891f !important;
-  font-weight: 700 !important;
+.price-row span:first-child {
+  margin-right: 10px; /* Garantia de espaço mínimo */
 }
 
-/* Footer iFood Checkout */
+.price-row span:last-child {
+  color: var(--bk-brown);
+  font-weight: 850;
+}
+
+.price-total {
+  border-top: 2px dashed var(--bk-cream-dark);
+  margin-top: 24px; /* Aumentado gap superior do total */
+  padding-top: 24px;
+  font-size: 19px !important;
+  font-weight: 950 !important;
+  color: var(--bk-brown) !important;
+}
+
+.price-total span:last-child {
+  font-size: 22px;
+  color: var(--bk-brown);
+}
+
+.frete-free-text {
+  color: #008A32 !important; /* BK Official Green */
+  font-weight: 900 !important;
+}
+
+/* 🚀 STICKY CHECKOUT FOOTER (BK VIBE) */
 .checkout-footer {
   position: sticky;
   bottom: 0;
   width: 100%;
-  background: #fff;
-  padding: 16px 20px;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+  background: linear-gradient(to top, #fff 80%, rgba(255,255,255,0.8));
+  padding: 20px;
+  padding-bottom: calc(20px + var(--safe-area-bottom));
+  box-shadow: 0 -10px 30px rgba(80,35,20,0.1);
   z-index: 9999;
-  border-top: 1px solid #f2f2f2;
+  border-top: 1.5px solid var(--bk-cream-dark);
 }
 
 .btn-finalizar-full {
@@ -2960,45 +3035,157 @@ body, .app-frame, html {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 16px 20px;
-  background: #ea1d2c !important;
+  padding: 20px 24px;
+  background: var(--bk-flame) !important;
   color: #fff;
   border: none;
-  border-radius: 12px; /* Super Rounding 12px */
-  font-weight: 700;
-  font-size: 16px;
-  box-shadow: 0 4px 12px rgba(234, 29, 44, 0.25);
+  border-radius: 100px; /* Extra pill style */
+  font-weight: 950;
+  font-size: 18px;
+  font-family: 'Lilita One', sans-serif !important;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 0 var(--bk-flame-dark), 0 12px 25px rgba(214,35,0,0.3);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s var(--ease-spring);
 }
 
 .btn-finalizar-full:active {
-  transform: scale(0.98);
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--bk-flame-dark), 0 5px 10px rgba(214,35,0,0.2);
 }
 
 .btn-finalizar-full span:last-child {
-  padding: 4px 12px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 6px;
+  padding: 6px 14px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 950;
 }
 
 /* Fim do arquivo - Estilos BK redundantes removidos */
 
-/* ─── CARROSSEL DE UPSELL (V8) ─── */
+/* ─── CARROSSEL DE UPSELL (V9 - HIGH ROI) ─── */
 .upsell-carousel {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-top: 10px;
+  padding-bottom: 8px;
+  padding-right: 16px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 .upsell-carousel::-webkit-scrollbar { 
   display: none; 
 }
 .upsell-carousel .upsell-item {
-  flex: 0 0 calc(45% - 6px);
+  flex: 0 0 130px;
+  min-width: 130px;
   margin-bottom: 0;
+  scroll-snap-align: start;
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 10px 14px;
+  border: 1.5px solid #f0f0f0;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.upsell-carousel .upsell-item:active {
+  transform: scale(0.96);
+}
+.upsell-carousel .upsell-item.selected {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  box-shadow: 0 4px 16px rgba(22,163,74,0.12);
+}
+.upsell-carousel .upsell-item.selected .upsell-check {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+.upsell-carousel .upsell-item.selected .upsell-check i::before {
+  content: "\f00c"; /* fa-check */
+}
+
+/* Badge de desconto */
+.upsell-discount-badge {
+  position: absolute;
+  top: -6px;
+  left: 8px;
+  background: #ea1d2c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 7px;
+  border-radius: 6px;
+  z-index: 2;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(234,29,44,0.25);
+}
+
+/* Check button */
+.upsell-carousel .upsell-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 1.5px solid #e0e0e0;
+  color: #c0c0c0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+/* Imagem do produto */
+.upsell-carousel .upsell-img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin: 4px auto 8px;
+  display: block;
+}
+
+/* Nome do produto */
+.upsell-carousel .upsell-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3e3e3e;
+  margin: 0 0 6px;
+  line-height: 1.2;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pricing container */
+.upsell-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.upsell-old-price {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b0b0b0;
+  text-decoration: line-through;
+}
+.upsell-new-price {
+  font-size: 14px;
+  font-weight: 900;
+  color: #16a34a;
 }
 
 /* 🏷️ CUPORE/CATEGORIA V8.1 */
@@ -3097,3 +3284,115 @@ body, .app-frame, html {
     transform: scale(0.98);
 }
 
+/* ─── 19. PIX UX REDESIGN (HIGH CONVERSION) ─── */
+.pix-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0;
+  text-align: left;
+}
+.pix-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f8f8;
+  padding: 12px;
+  border-radius: 12px;
+  border-left: 3px solid #16a34a;
+}
+.step-num {
+  width: 26px; height: 26px;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  font-weight: 900; font-size: 13px;
+  flex-shrink: 0;
+}
+.step-text {
+  font-size: 13px;
+  color: #444;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pulse-green {
+  animation: pulse-green-anim 1.5s infinite;
+}
+@keyframes pulse-green-anim {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+  70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+/* ─── 20. BOTÃO JÁ FIZ O PAGAMENTO (CHARM UX) ─── */
+.btn-pix-confirm {
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #d62300 0%, #a81c00 100%);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(214, 35, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.btn-pix-confirm:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 10px rgba(214, 35, 0, 0.4);
+}
+.btn-pix-confirm i {
+  font-size: 22px;
+}
+
+.shimmer-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  animation: shimmer-anim 3s infinite;
+}
+@keyframes shimmer-anim {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.btn-add-more {
+  width: 100%;
+  border: 2px solid var(--bk-brown) !important;
+  background: transparent !important;
+  color: var(--bk-brown) !important;
+  padding: 16px !important;
+  border-radius: 100px !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  text-align: center;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.btn-add-more:active {
+  background: rgba(80, 35, 20, 0.05) !important;
+  transform: scale(0.98);
+}
